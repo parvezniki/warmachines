@@ -1,1 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Artillery Strike - Ko9 Games</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Russo+One&display=swap');
+
+:root {
+  --olive: #4a5a2a;
+  --dark-olive: #2e3a18;
+  --khaki: #8b9d5a;
+  --sand: #c8b97a;
+  --rust: #c0392b;
+  --steel: #7f8c8d;
+  --hud-bg: rgba(10,15,5,0.92);
+  --amber: #f0a800;
+  --green-glow: #7fff00;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--dark-olive);
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--sand);
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#gameWrapper {
+  display: flex; flex-direction: column;
+  height: 100dvh; max-width: 900px; margin: 0 auto;
+}
+
+/* HUD */
+#hud {
+  display: flex; justify-content: space-between; align-items: stretch;
+  background: var(--hud-bg); border-bottom: 2px solid var(--olive);
+  padding: 5px 8px; gap: 6px; flex-shrink: 0;
+}
+.player-panel {
+  background: rgba(0,0,0,0.4); border: 1px solid var(--olive);
+  padding: 5px 8px; min-width: 125px;
+}
+.player-panel.active { border-color: var(--amber); box-shadow: 0 0 8px rgba(240,168,0,0.35); }
+.player-panel h3 {
+  font-family: 'Russo One', sans-serif; font-size: 10px;
+  letter-spacing: 2px; text-transform: uppercase; margin-bottom: 3px;
+}
+.p1-label { color: #5bc0eb; } .p2-label { color: #fa7921; }
+.stat-row { display:flex; justify-content:space-between; font-size:10px; margin:1px 0; }
+.stat-val { color: var(--green-glow); font-weight:bold; }
+.health-bar-bg { background:#1a1a1a; height:6px; border:1px solid #333; margin-top:3px; }
+.health-bar { height:100%; transition:width 0.3s; }
+.p1-health { background: linear-gradient(90deg,#5bc0eb,#0077b6); }
+.p2-health { background: linear-gradient(90deg,#fa7921,#c0392b); }
+
+#centerHud {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:3px;
+}
+#turnLabel {
+  font-family:'Russo One',sans-serif; font-size:11px;
+  letter-spacing:3px; color:var(--amber); text-transform:uppercase;
+}
+#aiStatus { font-size:9px; color:#fa7921; letter-spacing:2px; height:12px; }
+#diffRow { display:flex; gap:3px; }
+.diff-btn {
+  font-family:'Share Tech Mono',monospace; font-size:8px;
+  padding:2px 6px; border:1px solid var(--olive);
+  background:transparent; color:var(--khaki); cursor:pointer; letter-spacing:1px;
+}
+.diff-btn.active { background:var(--olive); color:var(--amber); border-color:var(--amber); }
+
+#gameCanvas { flex:1; display:block; touch-action:none; }
+
+#controlsArea {
+  background: var(--hud-bg);
+  border-top: 2px solid var(--olive);
+  display: flex; flex-direction: column;
+  flex-shrink: 0;
+}
+#actionRow {
+  display: flex; align-items: center;
+  gap: 4px; padding: 5px 6px 4px;
+  border-bottom: 1px solid var(--olive);
+}
+#weaponRow {
+  display: flex; align-items: center;
+  gap: 4px; padding: 4px 6px 5px;
+  overflow-x: auto; scrollbar-width: none;
+}
+#weaponRow::-webkit-scrollbar { display: none; }
+
+#turnTimerBar {
+  height: 4px; width: 100%; background: rgba(0,0,0,0.4);
+  position: relative; overflow: hidden;
+}
+#turnTimerFill {
+  height: 100%; width: 100%;
+  background: var(--green-glow);
+  transform-origin: left;
+  transition: background 0.3s;
+}
+
+.move-btn {
+  flex-shrink:0; background:var(--olive); border:1px solid var(--khaki);
+  color:var(--sand); font-family:'Share Tech Mono',monospace;
+  font-size:15px; width:38px; height:38px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+
+.wbtn {
+  flex-shrink:0; display:flex; flex-direction:column; align-items:center;
+  background:rgba(0,0,0,0.45); border:1px solid var(--olive);
+  padding:4px 8px; cursor:pointer; min-width:50px;
+}
+.wbtn.sel { border-color:var(--amber); background:rgba(240,168,0,0.15); }
+
+#powerBtn {
+  flex-shrink:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background:rgba(0,0,0,0.5); border:2px solid var(--olive);
+  padding:4px 10px; cursor:pointer; min-width:64px; gap:2px;
+}
+#powerBtnVal { font-family:'Russo One',sans-serif; font-size:18px; color:var(--amber); }
+#powerBtnBar { width:52px; height:6px; background:rgba(0,0,0,0.6); border:1px solid #555; }
+#powerBtnFill { height:100%; background: linear-gradient(90deg,#7fff00 0%,#f0a800 60%,#e74c3c 100%); }
+
+#fireBtn {
+  flex:1; background: linear-gradient(135deg,#8a1a0a,#c0392b);
+  border:2px solid #e74c3c; color:#fff;
+  font-family:'Russo One',sans-serif; font-size:13px; height:48px; cursor:pointer;
+}
+
+#overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.85);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  z-index:10; font-family:'Russo One',sans-serif;
+}
+#overlay h1 { font-size:42px; color:var(--amber); margin-bottom:6px; }
+#overlay .big-btn {
+  background:var(--olive); border:2px solid var(--amber); color:var(--amber);
+  font-size:16px; padding:12px 44px; cursor:pointer; margin:5px;
+}
+</style>
+</head>
+<body>
+
+<div id="overlay">
+  <h1>ARTILLERY STRIKE</h1>
+  <div class="subtitle">// KO9 GAMES // MISSILE WARFARE //</div>
+  <div id="winText" style="display:none"></div>
+  <button class="big-btn" onclick="startGame()">DEPLOY</button>
+</div>
+
+<div id="gameWrapper">
+  <div id="hud">
+    <div class="player-panel" id="panel1">
+      <h3 class="p1-label">◀ Player 1</h3>
+      <div class="stat-row"><span>HP</span><span class="stat-val" id="hp1">100</span></div>
+      <div class="stat-row"><span>ANG</span><span class="stat-val" id="ang1">55°</span></div>
+      <div class="health-bar-bg"><div class="health-bar p1-health" id="hbar1" style="width:100%"></div></div>
+    </div>
+    <div id="centerHud">
+      <div id="turnLabel">PLAYER 1 TURN</div>
+      <div id="aiStatus"></div>
+      <div id="diffRow">
+        <button class="diff-btn active" onclick="setDiff('easy')">EASY</button>
+        <button class="diff-btn" onclick="setDiff('medium')">MED</button>
+        <button class="diff-btn" onclick="setDiff('hard')">HARD</button>
+      </div>
+    </div>
+    <div class="player-panel" id="panel2">
+      <h3 class="p2-label">CPU ▶ 🤖</h3>
+      <div class="stat-row"><span>HP</span><span class="stat-val" id="hp2">100</span></div>
+      <div class="stat-row"><span>ANG</span><span class="stat-val" id="ang2">125°</span></div>
+      <div class="health-bar-bg"><div class="health-bar p2-health" id="hbar2" style="width:100%"></div></div>
+    </div>
+  </div>
+
+  <canvas id="gameCanvas"></canvas>
+
+  <div id="controlsArea">
+    <div id="turnTimerBar"><div id="turnTimerFill"></div></div>
+    <div id="actionRow">
+      <button class="move-btn" id="btnLeft">◀</button>
+      <button class="move-btn" id="btnRight">▶</button>
+      <div id="powerBtn">
+        <div id="powerBtnVal">50</div>
+        <div id="powerBtnBar"><div id="powerBtnFill" style="width:50%"></div></div>
+      </div>
+      <button id="fireBtn">FIRE ◆</button>
+    </div>
+    <div id="weaponRow"></div>
+  </div>
+</div>
+
+<script>
+// --- POLYFILLS ---
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    if (typeof r === 'number') r = [r, r, r, r];
+    this.beginPath();
+    this.moveTo(x + r[0], y);
+    this.arcTo(x + w, y, x + w, y + h, r[1]);
+    this.arcTo(x + w, y + h, x, y + h, r[2]);
+    this.arcTo(x, y + h, x, y, r[3]);
+    this.arcTo(x, y, x + w, y, r[0]);
+    this.closePath();
+    return this;
+  };
+}
+
+const canvas = document.getElementById('gameCanvas');
+const ctx    = canvas.getContext('2d');
+
+const WEAPONS = [
+  { id:'light',   name:'LIGHT',    icon:'🚀', damage:15, radius:22, gravity:1.0, color:'#f0c840', bounces:0, mSize:1, trailCol:'rgba(240,200,60,0.5)'  },
+  { id:'medium',  name:'MEDIUM',   icon:'🚀', damage:25, radius:35, gravity:0.9, color:'#f08020', bounces:0, mSize:2, trailCol:'rgba(240,128,32,0.5)'  },
+  { id:'heavy',   name:'HEAVY',    icon:'🚀', damage:38, radius:50, gravity:0.8, color:'#e04020', bounces:0, mSize:3, trailCol:'rgba(224,64,32,0.55)'  },
+  { id:'cluster', name:'CLUSTER',  icon:'💥', damage:12, radius:20, gravity:1.0, color:'#e06020', bounces:0, mSize:2, trailCol:'rgba(224,96,32,0.4)'   },
+  { id:'bunker',  name:'BUNKER',   icon:'🔩', damage:30, radius:18, gravity:1.2, color:'#8080c0', bounces:2, mSize:2, trailCol:'rgba(128,128,192,0.4)' },
+  { id:'cruise',  name:'CRUISE',   icon:'✈️', damage:28, radius:32, gravity:0.0, color:'#40c0ff', bounces:0, mSize:2, trailCol:'rgba(64,192,255,0.45)' },
+  { id:'thermo',  name:'THERMO',   icon:'☢️', damage:55, radius:85, gravity:0.7, color:'#80ff40', bounces:0, mSize:4, trailCol:'rgba(128,255,64,0.5)'  },
+  { id:'multi',   name:'MULTI',    icon:'🎯', damage:18, radius:28, gravity:0.9, color:'#ff8040', bounces:0, mSize:2, trailCol:'rgba(255,128,64,0.45)', multi:3 },
+];
+
+const weaponBar = document.getElementById('weaponRow');
+WEAPONS.forEach((w, i) => {
+  const b = document.createElement('button');
+  b.className = 'wbtn' + (i===0?' sel':'');
+  b.innerHTML = `<div class="wi">${w.icon}</div><div class="wn">${w.name}</div>`;
+  b.onclick = () => selectWeapon(i);
+  weaponBar.appendChild(b);
+});
+
+function selectWeapon(i) {
+  if (animating || currentPlayer !== 0) return;
+  tanks[0].weapon = WEAPONS[i];
+  document.querySelectorAll('.wbtn').forEach((b,j) => b.classList.toggle('sel', j===i));
+}
+
+let W, H, terrain, mudStrata, tanks, currentPlayer, projectiles = [], explosions = [], particles = [], dmgTexts = [];
+let gameRunning = false, animating = false, wind = 0, aiTurnId = 0, holdPower = 50;
+const TURN_EXPIRE_MS = 8000;
+let turnStartTime = null, turnTimerRaf = null, turnTimerId = 0;
+
+function initCanvas() {
+  const wr = document.getElementById('gameWrapper');
+  W = canvas.width = wr.clientWidth;
+  H = canvas.height = wr.clientHeight - document.getElementById('hud').offsetHeight - document.getElementById('controlsArea').offsetHeight;
+}
+
+function terrainY(x) {
+  const xi = Math.max(0, Math.min(W-1, Math.floor(x)));
+  return terrain[xi];
+}
+
+function generateTerrain() {
+  terrain = new Float32Array(W);
+  mudStrata = [];
+  let h = H * 0.5;
+  for (let x = 0; x < W; x++) {
+    h += (Math.random() - 0.5) * 10;
+    terrain[x] = Math.max(H*0.3, Math.min(H*0.8, h));
+    mudStrata[x] = [terrain[x], terrain[x]+20, terrain[x]+40, H];
+  }
+}
+
+function startGame() {
+  document.getElementById('overlay').style.display = 'none';
+  initCanvas();
+  generateTerrain();
+  wind = (Math.random()-0.5)*0.3;
+  tanks = [
+    { x:W*0.15, angle:55, hp:100, maxHp:100, color:'#5bc0eb', wheelColor:'#2070a0', weapon:WEAPONS[0], power:50 },
+    { x:W*0.85, angle:125, hp:100, maxHp:100, color:'#fa7921', wheelColor:'#9a2010', weapon:WEAPONS[0], power:50 }
+  ];
+  tanks.forEach(t => t.y = terrainY(t.x));
+  currentPlayer = 0; gameRunning = true; animating = false;
+  updateHUD();
+  requestAnimationFrame(loop);
+}
+
+function updateHUD() {
+  document.getElementById('turnLabel').textContent = currentPlayer===0 ? 'PLAYER 1 TURN' : 'CPU TURN 🤖';
+  document.getElementById('hp1').textContent = tanks[0].hp;
+  document.getElementById('hp2').textContent = tanks[1].hp;
+  document.getElementById('hbar1').style.width = tanks[0].hp+'%';
+  document.getElementById('hbar2').style.width = tanks[1].hp+'%';
+}
+
+// Fixed AI Weapon Logic
+function doAITurn() {
+  const myTurnId = ++aiTurnId;
+  const ai = tanks[1], tgt = tanks[0];
+  document.getElementById('aiStatus').textContent = '🤖 ANALYZING...';
+  
+  setTimeout(() => {
+    if (myTurnId !== aiTurnId || !gameRunning) return;
+    
+    // Safety check: only use weapons that exist
+    ai.weapon = (tgt.hp < 30) ? WEAPONS.find(w => w.id === 'heavy') : WEAPONS[0];
+
+    const dist = Math.abs(ai.x - tgt.x);
+    ai.angle = 135; // Simplified AI aim for example
+    ai.power = Math.min(100, dist / 5);
+    
+    fire();
+    document.getElementById('aiStatus').textContent = '';
+  }, 1000);
+}
+
+function fire() {
+  if (animating) return;
+  animating = true;
+  const t = tanks[currentPlayer];
+  const rad = (t.angle * Math.PI) / 180;
+  const spd = t.power * 0.22;
+  projectiles.push({ x: t.x, y: t.y - 20, vx: Math.cos(rad) * spd, vy: -Math.sin(rad) * spd, weapon: t.weapon, trail: [] });
+}
+
+function updateProjectiles() {
+  for (let i = projectiles.length - 1; i >= 0; i--) {
+    const p = projectiles[i];
+    p.vx += wind;
+    p.vy += p.weapon.gravity * 0.2;
+    p.x += p.vx; p.y += p.vy;
+    if (p.y >= terrainY(p.x) || p.x < 0 || p.x > W) {
+      explode(p);
+      projectiles.splice(i, 1);
+    }
+  }
+  if (projectiles.length === 0 && animating) {
+    animating = false;
+    currentPlayer = 1 - currentPlayer;
+    updateHUD();
+    if (currentPlayer === 1) doAITurn();
+  }
+}
+
+function explode(p) {
+  tanks.forEach(t => {
+    const d = Math.hypot(t.x - p.x, t.y - p.y);
+    if (d < p.weapon.radius) t.hp = Math.max(0, t.hp - p.weapon.damage);
+  });
+  explosions.push({ x: p.x, y: p.y, r: 0, maxR: p.weapon.radius, life: 1 });
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  // Terrain
+  ctx.fillStyle = '#4a5a2a';
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  for(let x=0; x<W; x++) ctx.lineTo(x, terrain[x]);
+  ctx.lineTo(W, H); ctx.fill();
+  
+  // Tanks
+  tanks.forEach(t => {
+    ctx.fillStyle = t.color;
+    ctx.fillRect(t.x - 10, t.y - 10, 20, 10);
+  });
+
+  // Projectiles
+  projectiles.forEach(p => {
+    ctx.fillStyle = 'white';
+    ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
+  });
+
+  // Explosions
+  explosions.forEach((e, i) => {
+    e.r += 2; e.life -= 0.02;
+    ctx.fillStyle = `rgba(255, 100, 0, ${e.life})`;
+    ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, Math.PI*2); ctx.fill();
+    if (e.life <= 0) explosions.splice(i, 1);
+  });
+
+  if (gameRunning) updateProjectiles();
+  requestAnimationFrame(loop);
+}
+
+// Controls
+document.getElementById('fireBtn').onclick = fire;
+document.getElementById('btnLeft').onclick = () => { if(!animating) tanks[0].x -= 10; tanks[0].y = terrainY(tanks[0].x); };
+document.getElementById('btnRight').onclick = () => { if(!animating) tanks[0].x += 10; tanks[0].y = terrainY(tanks[0].x); };
+
+window.addEventListener('resize', initCanvas);
+</script>
+</body>
+</html>
 
