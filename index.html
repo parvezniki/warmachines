@@ -1048,22 +1048,30 @@ function playWin() {
 // ── Drawing ───────────────────────────────────────────────────────────────────
 function drawSky() {
   const g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,'#050e1a');
-  g.addColorStop(0.55,'#0c2240');
-  g.addColorStop(1,'#182f20');
+  g.addColorStop(0,   '#01060f');  // near-black at top
+  g.addColorStop(0.45,'#061428');  // deep navy
+  g.addColorStop(0.75,'#0a1e14');  // dark green-black horizon
+  g.addColorStop(1,   '#050e08');  // almost black at ground
   ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-  ctx.fillStyle='rgba(255,255,255,0.55)';
-  for(let s=0;s<55;s++) ctx.fillRect((s*137+30)%W,(s*97+10)%(H*0.44),1,1);
+
+  // Stars — brighter, more varied
+  for(let s=0;s<80;s++){
+    const sx=(s*137+30)%W;
+    const sy=(s*97+10)%(H*0.50);
+    const br=0.4+((s*31)%10)/20;
+    ctx.fillStyle=`rgba(255,255,255,${br})`;
+    ctx.fillRect(sx,sy,(s%3===0?2:1),(s%3===0?2:1));
+  }
 }
 
 // Strata palette (top = index 0)
 const STRATA_COLORS = [
-  '#3a5220', // topsoil/grass root zone
-  '#4a3a1a', // dark humus/topsoil
-  '#5a3d22', // brown clay
-  '#6b4c30', // mid clay
-  '#7a5a3a', // sandy clay
-  '#8c6a45', // subsoil/sandy
+  '#2a3c14', // topsoil — dark olive green
+  '#3a2208', // humus — very dark brown
+  '#5c3518', // clay — warm mid brown
+  '#3a2810', // dark seam — near black-brown (contrast band)
+  '#6e4a28', // sandy clay — lighter brown
+  '#422010', // deep rock — dark reddish brown
 ];
 
 function drawTerrain() {
@@ -1092,48 +1100,52 @@ function drawTerrain() {
   ctx.lineTo(W,H);
   ctx.closePath();
   const topG = ctx.createLinearGradient(0,H*0.25,0,H);
-  topG.addColorStop(0,   '#3d5a22');
-  topG.addColorStop(0.06,'#3a4a1e');
-  topG.addColorStop(0.20,'#4a3518');
-  topG.addColorStop(0.45,'#5a3d22');
-  topG.addColorStop(1,   '#3a2510');
+  topG.addColorStop(0,    '#3a5c1a');  // bright grass green at very top
+  topG.addColorStop(0.04, '#2e4814');  // quick transition to dark
+  topG.addColorStop(0.12, '#3d2a0e');  // dark brown just below surface
+  topG.addColorStop(0.35, '#4a2e10');  // mid brown
+  topG.addColorStop(0.65, '#301808');  // dark reddish brown
+  topG.addColorStop(1,    '#1a0c04');  // near black at bottom
   ctx.fillStyle=topG; ctx.fill();
 
   // Stratum seam lines — subtle horizontal banding
-  ctx.lineWidth=0.8;
+  ctx.lineWidth=1;
   for (let s=1; s<STRATA_COLORS.length; s++) {
+    // Dark shadow line at top of each stratum
     ctx.beginPath();
-    ctx.strokeStyle=`rgba(20,12,5,${0.30-s*0.03})`;
+    ctx.strokeStyle=`rgba(0,0,0,${0.55-s*0.05})`;
     for (let x=0;x<W;x++) {
       const y = mudStrata[x] ? mudStrata[x][s] : terrain[x]+20*s;
       if(x===0) ctx.moveTo(0,y); else ctx.lineTo(x,y);
     }
     ctx.stroke();
-    // lighter highlight just below each seam
+    // Lighter highlight 2px below (gives depth/relief)
     ctx.beginPath();
-    ctx.strokeStyle=`rgba(140,100,60,${0.12-s*0.015})`;
+    ctx.strokeStyle=`rgba(160,110,60,${0.20-s*0.02})`;
     for (let x=0;x<W;x++) {
-      const y = (mudStrata[x] ? mudStrata[x][s] : terrain[x]+20*s) + 1.5;
+      const y = (mudStrata[x] ? mudStrata[x][s] : terrain[x]+20*s) + 2;
       if(x===0) ctx.moveTo(0,y); else ctx.lineTo(x,y);
     }
     ctx.stroke();
   }
 
-  // Grass tufts on surface
-  for (let x=0;x<W;x+=3) {
+  // Grass tufts on surface — vivid green
+  for (let x=0;x<W;x+=2) {
     const sy=terrain[x];
-    if (x>0 && Math.abs(terrain[x]-terrain[x-1])>3) continue; // no grass on steep slopes
-    const gh=2+Math.sin(x*0.41)*1.5;
-    ctx.fillStyle=`rgba(55,100,35,${0.55+Math.sin(x*0.63)*0.25})`;
+    if (x>0 && Math.abs(terrain[x]-terrain[x-1])>3) continue;
+    const gh=2+Math.sin(x*0.41)*1.8;
+    ctx.fillStyle=`rgba(45,160,28,${0.65+Math.sin(x*0.63)*0.28})`;
     ctx.fillRect(x,sy-gh,1,gh);
   }
-  // Occasional taller tuft
-  for (let x=8;x<W;x+=13) {
+  // Taller tufts with bright tips
+  for (let x=5;x<W;x+=11) {
     const sy=terrain[x];
     if (x>0 && Math.abs(terrain[x]-terrain[x-1])>2) continue;
-    ctx.fillStyle='rgba(65,120,40,0.5)';
-    ctx.fillRect(x-1,sy-5,1,5);
-    ctx.fillRect(x+1,sy-4,1,4);
+    ctx.fillStyle='rgba(50,180,30,0.7)';
+    ctx.fillRect(x-1,sy-6,1,6);
+    ctx.fillRect(x+1,sy-5,1,5);
+    ctx.fillStyle='rgba(90,220,50,0.4)';
+    ctx.fillRect(x,sy-9,1,4);
   }
 }
 
