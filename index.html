@@ -9,22 +9,22 @@
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Russo+One&display=swap');
 
 :root {
---olive: #4a5a2a;
---dark-olive: #2e3a18;
---khaki: #8b9d5a;
---sand: #c8b97a;
---rust: #c0392b;
---steel: #7f8c8d;
---hud-bg: rgba(10,15,5,0.92);
---amber: #f0a800;
---green-glow: #7fff00;
+–olive: #4a5a2a;
+–dark-olive: #2e3a18;
+–khaki: #8b9d5a;
+–sand: #c8b97a;
+–rust: #c0392b;
+–steel: #7f8c8d;
+–hud-bg: rgba(10,15,5,0.92);
+–amber: #f0a800;
+–green-glow: #7fff00;
 }
 
-* { margin:0; padding:0; box-sizing:border-box; }
+- { margin:0; padding:0; box-sizing:border-box; }
   body {
-  background: var(--dark-olive);
-  font-family: 'Share Tech Mono', monospace;
-  color: var(--sand);
+  background: var(–dark-olive);
+  font-family: ‘Share Tech Mono’, monospace;
+  color: var(–sand);
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
@@ -39,21 +39,21 @@ height: 100dvh; max-width: 900px; margin: 0 auto;
 /* HUD */
 #hud {
 display: flex; justify-content: space-between; align-items: stretch;
-background: var(--hud-bg); border-bottom: 2px solid var(--olive);
+background: var(–hud-bg); border-bottom: 2px solid var(–olive);
 padding: 5px 8px; gap: 6px; flex-shrink: 0;
 }
 .player-panel {
-background: rgba(0,0,0,0.4); border: 1px solid var(--olive);
+background: rgba(0,0,0,0.4); border: 1px solid var(–olive);
 padding: 5px 8px; min-width: 125px;
 }
-.player-panel.active { border-color: var(--amber); box-shadow: 0 0 8px rgba(240,168,0,0.35); }
+.player-panel.active { border-color: var(–amber); box-shadow: 0 0 8px rgba(240,168,0,0.35); }
 .player-panel h3 {
-font-family: 'Russo One', sans-serif; font-size: 10px;
+font-family: ‘Russo One’, sans-serif; font-size: 10px;
 letter-spacing: 2px; text-transform: uppercase; margin-bottom: 3px;
 }
 .p1-label { color: #5bc0eb; } .p2-label { color: #fa7921; }
 .stat-row { display:flex; justify-content:space-between; font-size:10px; margin:1px 0; }
-.stat-val { color: var(--green-glow); font-weight:bold; }
+.stat-val { color: var(–green-glow); font-weight:bold; }
 .health-bar-bg { background:#1a1a1a; height:6px; border:1px solid #333; margin-top:3px; }
 .health-bar { height:100%; transition:width 0.3s; }
 .p1-health { background: linear-gradient(90deg,#5bc0eb,#0077b6); }
@@ -64,32 +64,32 @@ flex:1; display:flex; flex-direction:column;
 align-items:center; justify-content:center; gap:3px;
 }
 #turnLabel {
-font-family:'Russo One',sans-serif; font-size:11px;
-letter-spacing:3px; color:var(--amber); text-transform:uppercase;
+font-family:‘Russo One’,sans-serif; font-size:11px;
+letter-spacing:3px; color:var(–amber); text-transform:uppercase;
 }
 #aiStatus { font-size:9px; color:#fa7921; letter-spacing:2px; height:12px; }
 #diffRow { display:flex; gap:3px; }
 .diff-btn {
-font-family:'Share Tech Mono',monospace; font-size:8px;
-padding:2px 6px; border:1px solid var(--olive);
-background:transparent; color:var(--khaki); cursor:pointer; letter-spacing:1px;
+font-family:‘Share Tech Mono’,monospace; font-size:8px;
+padding:2px 6px; border:1px solid var(–olive);
+background:transparent; color:var(–khaki); cursor:pointer; letter-spacing:1px;
 }
-.diff-btn.active { background:var(--olive); color:var(--amber); border-color:var(--amber); }
+.diff-btn.active { background:var(–olive); color:var(–amber); border-color:var(–amber); }
 
 /* Canvas */
 #gameCanvas { flex:1; display:block; touch-action:none; }
 
 /* Weapon bar */
 #controlsArea {
-background: var(--hud-bg);
-border-top: 2px solid var(--olive);
+background: var(–hud-bg);
+border-top: 2px solid var(–olive);
 display: flex; flex-direction: column;
 flex-shrink: 0;
 }
 #actionRow {
 display: flex; align-items: center;
 gap: 4px; padding: 5px 6px 4px;
-border-bottom: 1px solid var(--olive);
+border-bottom: 1px solid var(–olive);
 }
 #weaponRow {
 display: flex; align-items: center;
@@ -104,45 +104,45 @@ position: relative; overflow: hidden;
 }
 #turnTimerFill {
 height: 100%; width: 100%;
-background: var(--green-glow);
+background: var(–green-glow);
 transform-origin: left;
 transition: background 0.3s;
 }
 
 .move-btn {
-flex-shrink:0; background:var(--olive); border:1px solid var(--khaki);
-color:var(--sand); font-family:'Share Tech Mono',monospace;
+flex-shrink:0; background:var(–olive); border:1px solid var(–khaki);
+color:var(–sand); font-family:‘Share Tech Mono’,monospace;
 font-size:15px; width:38px; height:38px; cursor:pointer;
 display:flex; align-items:center; justify-content:center;
 transition: all 0.1s;
 }
-.move-btn:active { background:var(--khaki); color:#000; }
+.move-btn:active { background:var(–khaki); color:#000; }
 
-#sep { width:1px; background:var(--olive); align-self:stretch; margin:0 3px; flex-shrink:0; }
+#sep { width:1px; background:var(–olive); align-self:stretch; margin:0 3px; flex-shrink:0; }
 
 .wbtn {
 flex-shrink:0; display:flex; flex-direction:column; align-items:center;
-background:rgba(0,0,0,0.45); border:1px solid var(--olive);
+background:rgba(0,0,0,0.45); border:1px solid var(–olive);
 padding:4px 8px; cursor:pointer; min-width:50px;
 transition:all 0.12s;
 }
-.wbtn:active { border-color:var(--amber); }
-.wbtn.sel { border-color:var(--amber); background:rgba(240,168,0,0.15); }
+.wbtn:active { border-color:var(–amber); }
+.wbtn.sel { border-color:var(–amber); background:rgba(240,168,0,0.15); }
 .wbtn .wi { font-size:18px; line-height:1; }
-.wbtn .wn { font-size:7px; letter-spacing:.5px; color:var(--sand); margin-top:2px; text-align:center; }
+.wbtn .wn { font-size:7px; letter-spacing:.5px; color:var(–sand); margin-top:2px; text-align:center; }
 
 /* Power + Fire button styles */
 #powerBtn {
 flex-shrink:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-background:rgba(0,0,0,0.5); border:2px solid var(--olive);
+background:rgba(0,0,0,0.5); border:2px solid var(–olive);
 padding:4px 10px; cursor:pointer; min-width:64px; gap:2px;
 transition: border-color 0.1s, background 0.1s;
 touch-action: none; user-select:none;
 }
-#powerBtn:active, #powerBtn.charging { border-color:var(--amber); background:rgba(240,168,0,0.12); }
+#powerBtn:active, #powerBtn.charging { border-color:var(–amber); background:rgba(240,168,0,0.12); }
 #powerBtnVal {
-font-family:'Russo One',sans-serif; font-size:18px; line-height:1;
-color:var(--amber);
+font-family:‘Russo One’,sans-serif; font-size:18px; line-height:1;
+color:var(–amber);
 }
 #powerBtnBar {
 width:52px; height:6px;
@@ -153,14 +153,14 @@ height:100%; width:50%;
 background: linear-gradient(90deg,#7fff00 0%,#f0a800 60%,#e74c3c 100%);
 }
 #powerBtnLabel {
-font-size:7px; letter-spacing:1px; color:var(--khaki);
-font-family:'Share Tech Mono',monospace;
+font-size:7px; letter-spacing:1px; color:var(–khaki);
+font-family:‘Share Tech Mono’,monospace;
 }
 #fireBtn {
 flex-shrink:0; display:flex; align-items:center; justify-content:center;
 background: linear-gradient(135deg,#8a1a0a,#c0392b);
 border:2px solid #e74c3c; color:#fff;
-font-family:'Russo One',sans-serif; font-size:13px; letter-spacing:2px;
+font-family:‘Russo One’,sans-serif; font-size:13px; letter-spacing:2px;
 padding:0 16px; height:48px; cursor:pointer; min-width:70px;
 transition: all 0.1s;
 }
@@ -170,32 +170,53 @@ transition: all 0.1s;
 #overlay {
 position:fixed; inset:0; background:rgba(0,0,0,0.85);
 display:flex; flex-direction:column; align-items:center; justify-content:center;
-z-index:10; font-family:'Russo One',sans-serif;
+z-index:10; font-family:‘Russo One’,sans-serif;
 }
 #overlay h1 {
-font-size:42px; letter-spacing:8px; color:var(--amber);
+font-size:42px; letter-spacing:8px; color:var(–amber);
 text-shadow:0 0 20px rgba(240,168,0,0.5); margin-bottom:6px;
 }
 #overlay .subtitle {
-font-family:'Share Tech Mono',monospace; font-size:11px;
-color:var(--khaki); letter-spacing:3px; margin-bottom:30px;
+font-family:‘Share Tech Mono’,monospace; font-size:11px;
+color:var(–khaki); letter-spacing:3px; margin-bottom:30px;
 }
 #overlay .big-btn {
-background:var(--olive); border:2px solid var(--amber); color:var(--amber);
-font-family:'Russo One',sans-serif; font-size:16px; letter-spacing:4px;
+background:var(–olive); border:2px solid var(–amber); color:var(–amber);
+font-family:‘Russo One’,sans-serif; font-size:16px; letter-spacing:4px;
 padding:12px 44px; cursor:pointer; text-transform:uppercase;
 transition:all 0.2s; margin:5px;
 }
-#overlay .big-btn:hover { background:var(--amber); color:#000; }
+#overlay .big-btn:hover { background:var(–amber); color:#000; }
 #winText {
-font-size:24px; letter-spacing:4px; color:var(--green-glow);
+font-size:24px; letter-spacing:4px; color:var(–green-glow);
 margin-bottom:16px; text-shadow:0 0 15px rgba(127,255,0,0.5);
 }
 .key-hint {
-font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--steel);
-margin-top:20px; letter-spacing:2px; text-align:center; line-height:2;
+font-family:‘Share Tech Mono’,monospace; font-size:10px; color:var(–steel);
+margin-top:16px; letter-spacing:2px; text-align:center; line-height:2;
 }
-.key-hint span { color:var(--sand); }
+.key-hint span { color:var(–sand); }
+
+/* Overlay difficulty selector */
+#overlayDiffRow {
+display:flex; gap:8px; margin:18px 0 8px;
+}
+.odiff-btn {
+font-family:‘Share Tech Mono’,monospace; font-size:11px; letter-spacing:2px;
+padding:8px 20px; border:1px solid var(–olive);
+background:rgba(0,0,0,0.4); color:var(–khaki);
+cursor:pointer; text-transform:uppercase; transition:all 0.15s;
+}
+.odiff-btn:hover { border-color:var(–sand); color:var(–sand); }
+.odiff-btn.active {
+background:var(–olive); color:var(–amber);
+border-color:var(–amber); box-shadow:0 0 8px rgba(240,168,0,0.3);
+}
+#overlayDiffLabel {
+font-family:‘Share Tech Mono’,monospace; font-size:9px;
+letter-spacing:2px; color:var(–steel); text-transform:uppercase;
+margin-top:4px;
+}
 </style>
 
 </head>
@@ -205,12 +226,22 @@ margin-top:20px; letter-spacing:2px; text-align:center; line-height:2;
   <h1>ARTILLERY STRIKE</h1>
   <div class="subtitle">// KO9 GAMES // MISSILE WARFARE //</div>
   <div id="winText" style="display:none"></div>
-  <button class="big-btn" onclick="startGame()">DEPLOY</button>
+
+  <div id="overlayDiffRow">
+    <button class="odiff-btn active" onclick="setDiff('easy')">EASY</button>
+    <button class="odiff-btn" onclick="setDiff('medium')">MEDIUM</button>
+    <button class="odiff-btn" onclick="setDiff('hard')">HARD</button>
+  </div>
+  <div id="overlayDiffLabel">select difficulty</div>
+
+<button class="big-btn" onclick="startGame()">DEPLOY</button>
+
   <div class="key-hint">
-    <span>◀▶ swipe canvas</span> — aim barrel<br>
-    <span>hold POWER btn</span> — charge power (oscillates 0→100)<br>
-    <span>tap FIRE btn</span> — shoot with current power<br>
-    <span>tap ◀ ▶</span> — move &nbsp; <span>A/D W/S Q/E SPACE</span> — keyboard
+    <span>◀ ▶ swipe</span> on battlefield — aim launcher<br>
+    <span>hold POWER</span> — charge shot (0→100), release locks power<br>
+    <span>tap FIRE ◆</span> — launch missile at current power<br>
+    <span>◀ ▶ buttons</span> — move truck left / right<br>
+    <span>8 seconds</span> per turn — or your shot is forfeited
   </div>
 </div>
 
@@ -255,7 +286,8 @@ margin-top:20px; letter-spacing:2px; text-align:center; line-height:2;
       <button id="fireBtn">FIRE ◆</button>
     </div>
     <div id="weaponRow">
-      </div>
+      <!-- weapon buttons injected by JS -->
+    </div>
   </div>
 </div>
 
@@ -614,29 +646,33 @@ document.addEventListener('keydown', e => {
 
 // ── Fire ──────────────────────────────────────────────────────────────────────
 function fire() {
-  if (!gameRunning || animating) return;
+  if (!gameRunning) return;
+  if (animating && projectiles.length > 0) return; // already shooting
+  animating = false; // reset in case of stale state
   stopTurnTimer();
   aimCache.dots = []; // clear guide immediately
-  const t   = tanks[currentPlayer];
+  const idx = currentPlayer;
+  const t   = tanks[idx];
   const rad = (t.angle * Math.PI) / 180;
   const spd = t.power * 0.22;
   // Launch from rail tip — matches drawTank launcher geometry
-  const RAIL_LEN = 28, RAIL_Y = -18;
-  const bx = Math.cos(rad) * RAIL_LEN;
-  const by = -Math.sin(rad) * RAIL_LEN;
-  const startX = t.x + bx;
-  const startY = t.y + RAIL_Y + by;
+  const RAIL_LEN = 26;
+  const RAIL_BASE_X = idx === 0 ? -6 : 6;
+  const RAIL_BASE_Y = -16;
+  const startX = t.x + RAIL_BASE_X + Math.cos(rad) * RAIL_LEN;
+  const startY = t.y + RAIL_BASE_Y - Math.sin(rad) * RAIL_LEN;
   // Multi-warhead: spawn 3 missiles in a spread
   if (t.weapon.multi) {
-    const spread = [-8, 0, 8];
-    spread.forEach((offset, si) => {
+    // Spawn first missile immediately so projectiles.length > 0 before animating=true
+    spawnProjectile(startX, startY, Math.cos(rad)*spd, -Math.sin(rad)*spd, t.weapon, 0);
+    // Spawn subsequent missiles with slight delay
+    [1, 2].forEach(si => {
+      const offset = (si === 1 ? -8 : 8);
       setTimeout(() => {
         if (!gameRunning) return;
         const offRad = rad + offset * 0.018;
-        const svx = Math.cos(offRad)*spd + offset*0.04;
-        const svy = -Math.sin(offRad)*spd;
-        spawnProjectile(startX, startY, svx, svy, t.weapon, 0);
-      }, si * 120);
+        spawnProjectile(startX, startY, Math.cos(offRad)*spd + offset*0.04, -Math.sin(offRad)*spd, t.weapon, 0);
+      }, si * 150);
     });
   } else {
     spawnProjectile(startX, startY, Math.cos(rad)*spd, -Math.sin(rad)*spd, t.weapon, 0);
@@ -799,12 +835,13 @@ function endTurn() {
     playWin();
     return;
   }
-  currentPlayer=1-currentPlayer;
-  animating=false;
-  wind=(Math.random()-0.5)*0.38;
-  aimCache.angle = null; // force redraw for new turn
+  currentPlayer = 1 - currentPlayer;
+  animating = false;
+  projectiles = []; // ensure clean state
+  wind = (Math.random()-0.5)*0.38;
+  aimCache.angle = null;
   updateHUD();
-  if (currentPlayer===1) {
+  if (currentPlayer === 1) {
     stopTurnTimer();
     setTimerBarVisible(false);
     setTimeout(doAITurn, 600);
@@ -821,20 +858,27 @@ const DIFFICULTY = {
 };
 let aiDiff = 'easy';
 function setDiff(d) {
-  aiDiff=d;
-  document.querySelectorAll('.diff-btn').forEach(b=>
-    b.classList.toggle('active',b.textContent.toLowerCase().startsWith(d.slice(0,3))));
+  aiDiff = d;
+  // Sync HUD diff buttons
+  document.querySelectorAll('.diff-btn').forEach(b =>
+    b.classList.toggle('active', b.textContent.toLowerCase().startsWith(d.slice(0,3))));
+  // Sync overlay diff buttons
+  document.querySelectorAll('.odiff-btn').forEach(b =>
+    b.classList.toggle('active', b.textContent.toLowerCase().startsWith(d.slice(0,3))));
 }
 
 function simShot(ox,oy,vx,vy,grav) {
   let x=ox,y=oy,pvx=vx,pvy=vy;
-  for(let s=0;s<3000;s++){
+  for(let s=0;s<4000;s++){
     pvx+=wind; pvy+=grav*0.25; x+=pvx; y+=pvy;
     if(x<0||x>W||y>H+50) return null;
     if(y>=terrainY(x)) return x;
   }
   return null;
 }
+
+// AI launch height offset to match fire() geometry
+const AI_LAUNCH_Y_OFFSET = -16; // RAIL_BASE_Y
 
 function doAITurn() {
   const myTurnId = ++aiTurnId; // capture this turn's ID
@@ -848,8 +892,8 @@ function doAITurn() {
       ai.y=terrainY(ai.x);
     }
     const dist=Math.abs(ai.x-tgt.x);
-    if(tgt.hp<30&&Math.random()<0.5) ai.weapon=WEAPONS.find(w=>w.id==='nuke');
-    else if(dist>W*0.5&&Math.random()<0.4) ai.weapon=WEAPONS.find(w=>w.id==='sniper');
+    if(tgt.hp<30&&Math.random()<0.5) ai.weapon=WEAPONS.find(w=>w.id==='thermo')||WEAPONS[6];
+    else if(dist>W*0.5&&Math.random()<0.4) ai.weapon=WEAPONS.find(w=>w.id==='cruise')||WEAPONS[5];
     else if(Math.random()<0.25) ai.weapon=WEAPONS[Math.floor(Math.random()*WEAPONS.length)];
     else ai.weapon=WEAPONS[0];
 
@@ -860,7 +904,7 @@ function doAITurn() {
       for(let a=91;a<=179;a+=2){
         for(let p=20;p<=100;p+=5){
           const rad=(a*Math.PI)/180, spd=p*0.22;
-          const land=simShot(ai.x,ai.y-20,Math.cos(rad)*spd,-Math.sin(rad)*spd,ai.weapon.gravity);
+          const land=simShot(ai.x,ai.y+AI_LAUNCH_Y_OFFSET,Math.cos(rad)*spd,-Math.sin(rad)*spd,ai.weapon.gravity);
           if(land===null) continue;
           const d=Math.abs(land-tgt.x);
           if(d<bestD){bestD=d;bestA=a;bestP=p;}
@@ -1093,155 +1137,115 @@ function drawTerrain() {
   }
 }
 
-function drawTank(t,idx) {
-  // Artillery truck — launcher vehicle with missile on rail
-  const rad = (t.angle * Math.PI) / 180;
-  const facing = idx === 0 ? 1 : -1; // P1 faces right, CPU faces left
+function drawTank(t, idx) {
+  const rad    = (t.angle * Math.PI) / 180;
+  const facing = idx === 0 ? 1 : -1;
+  const cosR   = Math.cos(rad);
+  const sinR   = Math.sin(rad);
+  const RAIL_LEN = 26;
+  const RAIL_BASE_X = facing > 0 ? -6 : 6;
+  const RAIL_BASE_Y = -16;
 
   ctx.save();
   ctx.translate(t.x, t.y);
 
-  // Ground shadow
-  ctx.fillStyle='rgba(0,0,0,0.22)';
-  ctx.beginPath(); ctx.ellipse(0,3,30,5,0,0,Math.PI*2); ctx.fill();
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.beginPath(); ctx.ellipse(0, 3, 28, 5, 0, 0, Math.PI*2); ctx.fill();
 
-  // ── Truck wheels (4 rubber tires) ────────────────────────────────────────
-  const tirePositions = [-20,-8,8,20];
-  tirePositions.forEach(wx => {
-    // Tire
-    ctx.beginPath(); ctx.arc(wx,0,6,0,Math.PI*2);
-    ctx.fillStyle='#1a1a1a'; ctx.fill();
-    ctx.strokeStyle='#333'; ctx.lineWidth=1.5; ctx.stroke();
-    // Hub
-    ctx.beginPath(); ctx.arc(wx,0,2.5,0,Math.PI*2);
-    ctx.fillStyle=t.wheelColor; ctx.fill();
-    // Lug nuts
-    for(let a=0;a<4;a++){
-      const la=a*Math.PI/2;
-      ctx.beginPath(); ctx.arc(wx+Math.cos(la)*1.6,Math.sin(la)*1.6,0.7,0,Math.PI*2);
-      ctx.fillStyle='#888'; ctx.fill();
-    }
+  // Wheels
+  [-18, -6, 6, 18].forEach(wx => {
+    ctx.beginPath(); ctx.arc(wx, 0, 6, 0, Math.PI*2);
+    ctx.fillStyle = '#1a1a1a'; ctx.fill();
+    ctx.strokeStyle = '#444'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.beginPath(); ctx.arc(wx, 0, 2.5, 0, Math.PI*2);
+    ctx.fillStyle = t.wheelColor; ctx.fill();
   });
 
-  // ── Truck axle beams ──────────────────────────────────────────────────────
-  ctx.fillStyle='#2a2a2a';
-  ctx.fillRect(-24,-1,48,2); // front-rear axle bar
+  // Axle bar
+  ctx.fillStyle = '#252525'; ctx.fillRect(-22, -1, 44, 2);
 
-  // ── Truck cab (front) ─────────────────────────────────────────────────────
-  const cabX = facing > 0 ? 8 : -24; // cab on the facing side
-  ctx.fillStyle=t.color;
-  ctx.beginPath(); ctx.roundRect(cabX,-20,16,14,[3,3,0,0]); ctx.fill();
-  // Windshield
-  ctx.fillStyle='rgba(150,220,255,0.35)';
-  ctx.beginPath(); ctx.roundRect(cabX+2,-18,12,7,2); ctx.fill();
-  ctx.strokeStyle='rgba(0,0,0,0.3)'; ctx.lineWidth=0.8; ctx.stroke();
-  // Cab highlight
-  ctx.fillStyle='rgba(255,255,255,0.12)';
-  ctx.beginPath(); ctx.roundRect(cabX,-20,16,4,[3,3,0,0]); ctx.fill();
-
-  // ── Truck bed / launcher platform ─────────────────────────────────────────
-  const bedX = facing > 0 ? -22 : 8;
-  ctx.fillStyle=t.color;
-  ctx.beginPath(); ctx.roundRect(bedX,-16,30,10,[0,0,2,2]); ctx.fill();
-  // Bed ribs
-  ctx.strokeStyle='rgba(0,0,0,0.18)'; ctx.lineWidth=1;
-  for(let rx=bedX+5;rx<bedX+28;rx+=7){
-    ctx.beginPath(); ctx.moveTo(rx,-16); ctx.lineTo(rx,-6); ctx.stroke();
+  // Helper to draw a filled rect without roundRect (compatibility)
+  function fillRect4(x, y, w, h) {
+    ctx.beginPath();
+    ctx.rect(x, y, w, h);
+    ctx.fill();
   }
-  // Bed highlight
-  ctx.fillStyle='rgba(255,255,255,0.08)';
-  ctx.beginPath(); ctx.roundRect(bedX,-16,30,4,0); ctx.fill();
 
-  // ── Launcher rail (angled mount on bed) ───────────────────────────────────
-  const railBaseX = facing > 0 ? -8 : 8;
-  const railBaseY = -18;
-  ctx.save();
-  ctx.translate(railBaseX, railBaseY);
+  // Cab
+  const cabX = facing > 0 ? 6 : -22;
+  ctx.fillStyle = t.color; fillRect4(cabX, -20, 16, 14);
+  ctx.fillStyle = 'rgba(160,230,255,0.30)'; fillRect4(cabX+2, -18, 12, 7);
+  ctx.fillStyle = 'rgba(255,255,255,0.10)'; fillRect4(cabX, -20, 16, 4);
 
-  // Rail mount pivot disc
-  ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2);
-  ctx.fillStyle='#3a3a3a'; ctx.fill();
-  ctx.strokeStyle='#555'; ctx.lineWidth=1.2; ctx.stroke();
+  // Bed
+  const bedX = facing > 0 ? -22 : 6;
+  ctx.fillStyle = t.color; fillRect4(bedX, -15, 28, 9);
+  ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 1;
+  for (let rx = bedX+5; rx < bedX+26; rx += 6) {
+    ctx.beginPath(); ctx.moveTo(rx,-15); ctx.lineTo(rx,-6); ctx.stroke();
+  }
+  ctx.fillStyle = 'rgba(255,255,255,0.07)'; fillRect4(bedX, -15, 28, 4);
 
-  // Launcher rail tube
-  const RAIL_LEN = 28;
-  const bx = Math.cos(rad) * RAIL_LEN;
-  const by = -Math.sin(rad) * RAIL_LEN;
-  ctx.strokeStyle=t.wheelColor; ctx.lineWidth=5; ctx.lineCap='round';
-  ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(bx,by); ctx.stroke();
-  // Rail groove
-  ctx.strokeStyle='rgba(0,0,0,0.3)'; ctx.lineWidth=2;
-  ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(bx,by); ctx.stroke();
-  // Rail end flare
-  ctx.strokeStyle=t.wheelColor; ctx.lineWidth=3; ctx.lineCap='square';
-  ctx.beginPath(); ctx.moveTo(bx*0.85,by*0.85); ctx.lineTo(bx,by); ctx.stroke();
+  // Rail pivot
+  ctx.beginPath(); ctx.arc(RAIL_BASE_X, RAIL_BASE_Y, 4, 0, Math.PI*2);
+  ctx.fillStyle = '#3a3a3a'; ctx.fill();
+  ctx.strokeStyle = '#666'; ctx.lineWidth = 1; ctx.stroke();
 
-  // ── Missile on rail ───────────────────────────────────────────────────────
-  const mSize = t.weapon ? (t.weapon.mSize||2) : 2;
-  const mLen  = 8 + mSize * 4;   // 12–24px body length
-  const mRad  = 1.5 + mSize*0.8; // 2.3–4.7px radius
-  const mCol  = t.weapon ? t.weapon.color : t.color;
+  // Rail tube (from pivot to tip)
+  const tipX = RAIL_BASE_X + cosR * RAIL_LEN;
+  const tipY = RAIL_BASE_Y - sinR * RAIL_LEN;
+  ctx.strokeStyle = t.wheelColor; ctx.lineWidth = 5; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(RAIL_BASE_X, RAIL_BASE_Y); ctx.lineTo(tipX, tipY); ctx.stroke();
+  ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(RAIL_BASE_X, RAIL_BASE_Y); ctx.lineTo(tipX, tipY); ctx.stroke();
 
-  ctx.save();
-  ctx.rotate(-rad); // align missile along rail direction
-  // Position missile partway along rail
-  const mPos = RAIL_LEN * 0.55;
-  ctx.translate(mPos * Math.cos(0), 0); // along the rotated axis
-
-  ctx.save();
-  ctx.rotate(rad); // cancel rotation so we draw in rail-aligned space manually
-
-  // Draw missile oriented along rail
-  const mx = mPos;
-  const my = 0;
-  ctx.restore();
-  ctx.restore();
-
-  // Draw missile properly along rail vector
-  const mStartF = 0.3, mEndF = 0.75;
-  const msX = bx * mStartF, msY = by * mStartF;
-  const meX = bx * mEndF,   meY = by * mEndF;
-  const dirX = (meX-msX), dirY = (meY-msY);
-  const mNorm = Math.sqrt(dirX*dirX+dirY*dirY)||1;
-  const perpX = -dirY/mNorm, perpY = dirX/mNorm;
+  // Missile sitting on rail (drawn in world-relative coords, no extra save/restore needed)
+  const mSize = t.weapon ? (t.weapon.mSize || 2) : 2;
+  const mBodyLen = 7 + mSize * 4;
+  const mRad     = 1.4 + mSize * 0.75;
+  const mCol     = t.weapon ? t.weapon.color : t.color;
+  // Missile tail start and nose end along rail direction
+  const mT  = 0.25, mN = 0.75; // fractions along rail
+  const mtX = RAIL_BASE_X + cosR * RAIL_LEN * mT;
+  const mtY = RAIL_BASE_Y - sinR * RAIL_LEN * mT;
+  const mnX = RAIL_BASE_X + cosR * RAIL_LEN * mN;
+  const mnY = RAIL_BASE_Y - sinR * RAIL_LEN * mN;
+  // Perpendicular to rail
+  const pX = sinR, pY = cosR; // perpendicular (rotated 90°)
 
   // Body
-  ctx.fillStyle=mCol;
+  ctx.fillStyle = mCol;
   ctx.beginPath();
-  ctx.moveTo(msX + perpX*mRad, msY + perpY*mRad);
-  ctx.lineTo(meX + perpX*mRad, meY + perpY*mRad);
-  ctx.lineTo(meX - perpX*mRad, meY - perpY*mRad);
-  ctx.lineTo(msX - perpX*mRad, msY - perpY*mRad);
+  ctx.moveTo(mtX + pX*mRad, mtY + pY*mRad);
+  ctx.lineTo(mnX + pX*mRad, mnY + pY*mRad);
+  ctx.lineTo(mnX - pX*mRad, mnY - pY*mRad);
+  ctx.lineTo(mtX - pX*mRad, mtY - pY*mRad);
   ctx.closePath(); ctx.fill();
 
-  // Nose cone
-  ctx.fillStyle='#cc2200';
+  // Nose cone (points along rail direction toward tip)
+  ctx.fillStyle = '#cc2200';
   ctx.beginPath();
-  ctx.moveTo(meX + perpX*mRad, meY + perpY*mRad);
-  ctx.lineTo(meX + (bx/RAIL_LEN)*mRad*3, meY + (by/RAIL_LEN)*mRad*3);
-  ctx.lineTo(meX - perpX*mRad, meY - perpY*mRad);
+  ctx.moveTo(mnX + pX*mRad, mnY + pY*mRad);
+  ctx.lineTo(mnX + cosR*mRad*3, mnY - sinR*mRad*3);
+  ctx.lineTo(mnX - pX*mRad, mnY - pY*mRad);
   ctx.closePath(); ctx.fill();
 
-  // Fin (at base)
-  ctx.fillStyle=t.wheelColor;
-  const finW = mRad*1.5;
-  ctx.beginPath();
-  ctx.moveTo(msX + perpX*mRad, msY + perpY*mRad);
-  ctx.lineTo(msX + perpX*(mRad+finW) - (bx/RAIL_LEN)*finW*1.2, msY + perpY*(mRad+finW) - (by/RAIL_LEN)*finW*1.2);
-  ctx.lineTo(msX - (bx/RAIL_LEN)*mRad, msY - (by/RAIL_LEN)*mRad);
-  ctx.closePath(); ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(msX - perpX*mRad, msY - perpY*mRad);
-  ctx.lineTo(msX - perpX*(mRad+finW) - (bx/RAIL_LEN)*finW*1.2, msY - perpY*(mRad+finW) - (by/RAIL_LEN)*finW*1.2);
-  ctx.lineTo(msX - (bx/RAIL_LEN)*mRad, msY - (by/RAIL_LEN)*mRad);
-  ctx.closePath(); ctx.fill();
+  // Tail fins
+  const finW = mRad * 1.6;
+  ctx.fillStyle = t.wheelColor;
+  [1, -1].forEach(side => {
+    ctx.beginPath();
+    ctx.moveTo(mtX + pX*mRad*side, mtY + pY*mRad*side);
+    ctx.lineTo(mtX + pX*(mRad+finW)*side - cosR*finW, mtY + pY*(mRad+finW)*side + sinR*finW);
+    ctx.lineTo(mtX - cosR*mRad*0.5, mtY + sinR*mRad*0.5);
+    ctx.closePath(); ctx.fill();
+  });
 
-  ctx.restore(); // end launcher rail translate
-
-  // ── Label ────────────────────────────────────────────────────────────────
-  ctx.fillStyle=idx===0?'#5bc0eb':'#fa7921';
-  ctx.font='bold 8px Share Tech Mono'; ctx.textAlign='center';
-  ctx.fillText(idx===0?'P1':'CPU',0,-40);
+  // Label
+  ctx.fillStyle = idx===0 ? '#5bc0eb' : '#fa7921';
+  ctx.font = 'bold 8px Share Tech Mono'; ctx.textAlign = 'center';
+  ctx.fillText(idx===0 ? 'P1' : 'CPU', 0, -38);
 
   ctx.restore();
 }
@@ -1265,9 +1269,9 @@ function recomputeAimDots() {
 
   const rad = (t.angle * Math.PI) / 180;
   const spd = pow * 0.22;
-  const RAIL_LEN = 28, RAIL_Y = -18;
-  let x  = t.x + Math.cos(rad) * RAIL_LEN;
-  let y  = t.y + RAIL_Y + (-Math.sin(rad)) * RAIL_LEN;
+  const RAIL_LEN = 26, RAIL_BASE_X = -6, RAIL_BASE_Y = -16;
+  let x  = t.x + RAIL_BASE_X + Math.cos(rad) * RAIL_LEN;
+  let y  = t.y + RAIL_BASE_Y - Math.sin(rad) * RAIL_LEN;
   let vx = Math.cos(rad) * spd;
   let vy = -Math.sin(rad) * spd;
 
