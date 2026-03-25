@@ -52,7 +52,7 @@ font-family: ‘Russo One’, sans-serif; font-size: 10px;
 letter-spacing: 2px; text-transform: uppercase; margin-bottom: 3px;
 }
 .p1-label { color: #5bc0eb; } .p2-label { color: #fa7921; }
-.stat-row { display:flex; justify-content:space-between; font-size:10px; margin:1px 0; }
+.stat-row { display:flex; justify-content:space-between; font-size:10px; margin:1px 0; color:#d4c88a; }
 .stat-val { color: var(–green-glow); font-weight:bold; }
 .health-bar-bg { background:#1a1a1a; height:6px; border:1px solid #333; margin-top:3px; }
 .health-bar { height:100%; transition:width 0.3s; }
@@ -71,8 +71,8 @@ letter-spacing:3px; color:var(–amber); text-transform:uppercase;
 #diffRow { display:flex; gap:3px; }
 .diff-btn {
 font-family:‘Share Tech Mono’,monospace; font-size:8px;
-padding:2px 6px; border:1px solid var(–olive);
-background:transparent; color:var(–khaki); cursor:pointer; letter-spacing:1px;
+padding:2px 6px; border:1px solid var(–khaki);
+background:rgba(0,0,0,0.3); color:#b0c070; cursor:pointer; letter-spacing:1px;
 }
 .diff-btn.active { background:var(–olive); color:var(–amber); border-color:var(–amber); }
 
@@ -129,7 +129,7 @@ transition:all 0.12s;
 .wbtn:active { border-color:var(–amber); }
 .wbtn.sel { border-color:var(–amber); background:rgba(240,168,0,0.15); }
 .wbtn .wi { font-size:18px; line-height:1; }
-.wbtn .wn { font-size:7px; letter-spacing:.5px; color:var(–sand); margin-top:2px; text-align:center; }
+.wbtn .wn { font-size:7px; letter-spacing:.5px; color:#ddd090; margin-top:2px; text-align:center; }
 
 /* Power + Fire button styles */
 #powerBtn {
@@ -153,7 +153,7 @@ height:100%; width:50%;
 background: linear-gradient(90deg,#7fff00 0%,#f0a800 60%,#e74c3c 100%);
 }
 #powerBtnLabel {
-font-size:7px; letter-spacing:1px; color:var(–khaki);
+font-size:7px; letter-spacing:1px; color:#b0c070;
 font-family:‘Share Tech Mono’,monospace;
 }
 #fireBtn {
@@ -178,7 +178,7 @@ text-shadow:0 0 20px rgba(240,168,0,0.5); margin-bottom:6px;
 }
 #overlay .subtitle {
 font-family:‘Share Tech Mono’,monospace; font-size:11px;
-color:var(–khaki); letter-spacing:3px; margin-bottom:30px;
+color:#b0c070; letter-spacing:3px; margin-bottom:30px;
 }
 #overlay .big-btn {
 background:var(–olive); border:2px solid var(–amber); color:var(–amber);
@@ -192,7 +192,7 @@ font-size:24px; letter-spacing:4px; color:var(–green-glow);
 margin-bottom:16px; text-shadow:0 0 15px rgba(127,255,0,0.5);
 }
 .key-hint {
-font-family:‘Share Tech Mono’,monospace; font-size:10px; color:var(–steel);
+font-family:‘Share Tech Mono’,monospace; font-size:10px; color:#90a090;
 margin-top:16px; letter-spacing:2px; text-align:center; line-height:2;
 }
 .key-hint span { color:var(–sand); }
@@ -204,7 +204,7 @@ display:flex; gap:8px; margin:18px 0 8px;
 .odiff-btn {
 font-family:‘Share Tech Mono’,monospace; font-size:11px; letter-spacing:2px;
 padding:8px 20px; border:1px solid var(–olive);
-background:rgba(0,0,0,0.4); color:var(–khaki);
+background:rgba(0,0,0,0.4); color:#b0c070;
 cursor:pointer; text-transform:uppercase; transition:all 0.15s;
 }
 .odiff-btn:hover { border-color:var(–sand); color:var(–sand); }
@@ -214,7 +214,7 @@ border-color:var(–amber); box-shadow:0 0 8px rgba(240,168,0,0.3);
 }
 #overlayDiffLabel {
 font-family:‘Share Tech Mono’,monospace; font-size:9px;
-letter-spacing:2px; color:var(–steel); text-transform:uppercase;
+letter-spacing:2px; color:#90a090; text-transform:uppercase;
 margin-top:4px;
 }
 </style>
@@ -263,7 +263,7 @@ margin-top:4px;
       </div>
     </div>
     <div class="player-panel" id="panel2">
-      <h3 class="p2-label">CPU ▶ 🤖</h3>
+      <h3 class="p2-label">AI ▶ 🤖</h3>
       <div class="stat-row"><span>HP</span><span class="stat-val" id="hp2">100</span></div>
       <div class="stat-row"><span>ANG</span><span class="stat-val" id="ang2">125°</span></div>
       <div class="health-bar-bg"><div class="health-bar p2-health" id="hbar2" style="width:100%"></div></div>
@@ -333,7 +333,22 @@ let terrain, mudStrata;   // mudStrata[x] = array of stratum Y positions
 let tanks, currentPlayer;
 let projectiles, explosions, particles, dmgTexts;
 let gameRunning, animating, wind;
-let aiTurnId = 0; // incremented each turn; AI callbacks check this to self-cancel if stale
+let aiTurnId = 0;
+let aiTurnActive = false;
+let pendingSpawns = 0;
+
+// ── Tracked timeouts — all game timeouts go through here so startGame can cancel all ──
+const _gameTimers = new Set();
+function gameTimeout(fn, ms) {
+  let id;
+  id = setTimeout(() => { _gameTimers.delete(id); fn(); }, ms);
+  _gameTimers.add(id);
+  return id;
+}
+function cancelAllGameTimers() {
+  _gameTimers.forEach(id => clearTimeout(id));
+  _gameTimers.clear();
+}
 
 // Turn timer
 const TURN_WARN_MS   = 5000;  // 5s — caution
@@ -468,9 +483,15 @@ function startGame() {
   flattenArea(p2x, 30);
   tanks.forEach(t => t.y = terrainY(t.x));
 
+  // Cancel every pending timeout from the previous game first
+  cancelAllGameTimers();
+  stopTurnTimer();
+
   projectiles=[]; explosions=[]; particles=[]; dmgTexts=[];
   currentPlayer=0; gameRunning=true; animating=false;
-  aiTurnId++; // cancel any pending AI callbacks from previous game
+  aiTurnId++;        // invalidate any AI stale-check guards
+  aiTurnActive = false;
+  pendingSpawns = 0;
   holdPower=50; updatePowerBtn();
 
   document.querySelectorAll('.wbtn').forEach((b,i)=>b.classList.toggle('sel',i===0));
@@ -478,12 +499,12 @@ function startGame() {
   updateHUD();
   requestAnimationFrame(loop);
   setTimerBarVisible(false);
-  setTimeout(startTurnTimer, 200); // slight delay so game is fully ready
+  gameTimeout(startTurnTimer, 200); // slight delay so game is fully ready
 }
 
 // ── HUD ───────────────────────────────────────────────────────────────────────
 function updateHUD() {
-  document.getElementById('turnLabel').textContent = currentPlayer===0 ? 'PLAYER 1 TURN' : 'CPU TURN 🤖';
+  document.getElementById('turnLabel').textContent = currentPlayer===0 ? 'PLAYER 1 TURN' : 'AI TURN 🤖';
   document.getElementById('panel1').classList.toggle('active', currentPlayer===0);
   document.getElementById('panel2').classList.toggle('active', currentPlayer===1);
   document.getElementById('hp1').textContent = tanks[0].hp;
@@ -663,12 +684,12 @@ function fire() {
   const startY = t.y + RAIL_BASE_Y - Math.sin(rad) * RAIL_LEN;
   // Multi-warhead: spawn 3 missiles in a spread
   if (t.weapon.multi) {
-    // Spawn first missile immediately so projectiles.length > 0 before animating=true
     spawnProjectile(startX, startY, Math.cos(rad)*spd, -Math.sin(rad)*spd, t.weapon, 0);
-    // Spawn subsequent missiles with slight delay
+    pendingSpawns = 2; // 2 more missiles coming
     [1, 2].forEach(si => {
       const offset = (si === 1 ? -8 : 8);
-      setTimeout(() => {
+      gameTimeout(() => {
+        pendingSpawns--;
         if (!gameRunning) return;
         const offRad = rad + offset * 0.018;
         spawnProjectile(startX, startY, Math.cos(offRad)*spd + offset*0.04, -Math.sin(offRad)*spd, t.weapon, 0);
@@ -710,7 +731,7 @@ function updateProjectiles() {
       }
     }
   }
-  if (projectiles.length===0 && animating) setTimeout(endTurn, 700);
+  if (projectiles.length===0 && pendingSpawns===0 && animating) gameTimeout(endTurn, 700);
 }
 
 function explode(p) {
@@ -800,7 +821,7 @@ function startTurnTimer() {
       setTimerBarVisible(false);
       animating = true;
       projectiles = [];
-      setTimeout(endTurn, 400);
+      gameTimeout(endTurn, 400);
       return;
     }
     turnTimerRaf = requestAnimationFrame(tick);
@@ -824,7 +845,7 @@ function setTimerBarVisible(visible) {
 function endTurn() {
   tanks.forEach(t => t.y=terrainY(t.x));
   if (tanks[0].hp<=0||tanks[1].hp<=0) {
-    const winner=tanks[0].hp>0?'PLAYER 1':'CPU';
+    const winner=tanks[0].hp>0?'PLAYER 1':'AI';
     gameRunning=false;
     const ov=document.getElementById('overlay');
     const wt=document.getElementById('winText');
@@ -837,16 +858,17 @@ function endTurn() {
   }
   currentPlayer = 1 - currentPlayer;
   animating = false;
-  projectiles = []; // ensure clean state
+  pendingSpawns = 0;
+  projectiles = [];
   wind = (Math.random()-0.5)*0.38;
   aimCache.angle = null;
   updateHUD();
   if (currentPlayer === 1) {
     stopTurnTimer();
     setTimerBarVisible(false);
-    setTimeout(doAITurn, 600);
+    gameTimeout(doAITurn, 600);
   } else {
-    setTimeout(startTurnTimer, 200);
+    gameTimeout(startTurnTimer, 200);
   }
 }
 
@@ -881,47 +903,69 @@ function simShot(ox,oy,vx,vy,grav) {
 const AI_LAUNCH_Y_OFFSET = -16; // RAIL_BASE_Y
 
 function doAITurn() {
-  const myTurnId = ++aiTurnId; // capture this turn's ID
-  const ai=tanks[1], tgt=tanks[0], diff=DIFFICULTY[aiDiff];
+  if (!gameRunning || currentPlayer !== 1) return;
+  aiTurnActive = true;
+  const myId = ++aiTurnId;
+
+  function stale() { return myId !== aiTurnId || !gameRunning || currentPlayer !== 1; }
+
+  const ai   = tanks[1];
+  const tgt  = tanks[0];
+  const diff = DIFFICULTY[aiDiff];
+
   setAISt('ANALYZING...');
-  setTimeout(()=>{
-    if (myTurnId !== aiTurnId || currentPlayer !== 1 || !gameRunning) return; // stale
-    if(Math.random()<diff.moveChance){
-      const dir=Math.random()<0.5?-1:1;
-      for(let i=0;i<4;i++) ai.x=Math.max(W*0.52,Math.min(W-20,ai.x+dir*9));
-      ai.y=terrainY(ai.x);
+
+  // Step 1: move + pick weapon (700ms)
+  gameTimeout(() => {
+    if (stale()) { aiTurnActive = false; return; }
+
+    if (Math.random() < diff.moveChance) {
+      const dir = Math.random() < 0.5 ? -1 : 1;
+      for (let i = 0; i < 4; i++)
+        ai.x = Math.max(W*0.52, Math.min(W-20, ai.x + dir*9));
+      ai.y = terrainY(ai.x);
     }
-    const dist=Math.abs(ai.x-tgt.x);
-    if(tgt.hp<30&&Math.random()<0.5) ai.weapon=WEAPONS.find(w=>w.id==='thermo')||WEAPONS[6];
-    else if(dist>W*0.5&&Math.random()<0.4) ai.weapon=WEAPONS.find(w=>w.id==='cruise')||WEAPONS[5];
-    else if(Math.random()<0.25) ai.weapon=WEAPONS[Math.floor(Math.random()*WEAPONS.length)];
-    else ai.weapon=WEAPONS[0];
+
+    const dist = Math.abs(ai.x - tgt.x);
+    if      (tgt.hp < 30  && Math.random() < 0.5) ai.weapon = WEAPONS.find(w=>w.id==='thermo')  || WEAPONS[6];
+    else if (dist > W*0.5 && Math.random() < 0.4) ai.weapon = WEAPONS.find(w=>w.id==='cruise')  || WEAPONS[5];
+    else if (Math.random() < 0.25)                 ai.weapon = WEAPONS[Math.floor(Math.random()*WEAPONS.length)];
+    else                                            ai.weapon = WEAPONS[0];
 
     setAISt('TARGETING...');
-    setTimeout(()=>{
-      if (myTurnId !== aiTurnId || currentPlayer !== 1 || !gameRunning) return; // stale
-      let bestA=125,bestP=50,bestD=Infinity;
-      for(let a=91;a<=179;a+=2){
-        for(let p=20;p<=100;p+=5){
-          const rad=(a*Math.PI)/180, spd=p*0.22;
-          const land=simShot(ai.x,ai.y+AI_LAUNCH_Y_OFFSET,Math.cos(rad)*spd,-Math.sin(rad)*spd,ai.weapon.gravity);
-          if(land===null) continue;
-          const d=Math.abs(land-tgt.x);
-          if(d<bestD){bestD=d;bestA=a;bestP=p;}
+
+    // Step 2: compute best shot (600ms later)
+    gameTimeout(() => {
+      if (stale()) { aiTurnActive = false; return; }
+
+      let bestA = 125, bestP = 50, bestD = Infinity;
+      for (let a = 91; a <= 179; a += 2) {
+        for (let p = 20; p <= 100; p += 5) {
+          const rad  = (a * Math.PI) / 180;
+          const spd  = p * 0.22;
+          const land = simShot(ai.x, ai.y + AI_LAUNCH_Y_OFFSET,
+                               Math.cos(rad)*spd, -Math.sin(rad)*spd,
+                               ai.weapon.gravity);
+          if (land === null) continue;
+          const d = Math.abs(land - tgt.x);
+          if (d < bestD) { bestD = d; bestA = a; bestP = p; }
         }
       }
-      const n=diff.noise;
-      ai.angle=Math.max(91,Math.min(179,bestA+(Math.random()-0.5)*n));
-      ai.power=Math.max(10,Math.min(100,bestP+(Math.random()-0.5)*n*0.8));
+      const n = diff.noise;
+      ai.angle  = Math.max(91,  Math.min(179, bestA + (Math.random()-0.5)*n));
+      ai.power  = Math.max(10,  Math.min(100, bestP + (Math.random()-0.5)*n*0.8));
       updateHUD();
       setAISt('FIRING!');
-      setTimeout(()=>{
-        if (myTurnId !== aiTurnId || currentPlayer !== 1 || !gameRunning) return; // stale
+
+      // Step 3: fire (400ms later)
+      gameTimeout(() => {
+        if (stale()) { aiTurnActive = false; return; }
         setAISt('');
+        aiTurnActive = false;
         fire();
-      },400);
-    },600);
-  },700);
+      }, 400);
+    }, 600);
+  }, 700);
 }
 function setAISt(m){ document.getElementById('aiStatus').textContent=m?`🤖 ${m}`:''; }
 
@@ -1257,7 +1301,7 @@ function drawTank(t, idx) {
   // Label
   ctx.fillStyle = idx===0 ? '#5bc0eb' : '#fa7921';
   ctx.font = 'bold 8px Share Tech Mono'; ctx.textAlign = 'center';
-  ctx.fillText(idx===0 ? 'P1' : 'CPU', 0, -38);
+  ctx.fillText(idx===0 ? 'P1' : 'AI', 0, -38);
 
   ctx.restore();
 }
