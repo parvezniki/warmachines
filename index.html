@@ -133,28 +133,39 @@ transition:all 0.12s;
 
 /* Power + Fire button styles */
 #powerBtn {
-flex-shrink:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-background:rgba(0,0,0,0.5); border:2px solid var(–olive);
-padding:4px 10px; cursor:pointer; min-width:64px; gap:2px;
-transition: border-color 0.1s, background 0.1s;
+flex-shrink:0; display:flex; flex-direction:column; align-items:stretch; justify-content:center;
+background:rgba(0,0,0,0.55); border:2px solid var(–olive);
+padding:5px 12px; cursor:pointer; min-width:160px; gap:4px;
+transition: border-color 0.15s, background 0.15s;
 touch-action: none; user-select:none;
 }
-#powerBtn:active, #powerBtn.charging { border-color:var(–amber); background:rgba(240,168,0,0.12); }
+#powerBtn:active, #powerBtn.charging {
+border-color:var(–amber);
+background:rgba(240,168,0,0.12);
+box-shadow: 0 0 10px rgba(240,168,0,0.25);
+}
+/* Top row: label left, value right */
+#powerBtnTop {
+display:flex; justify-content:space-between; align-items:baseline;
+}
+#powerBtnLabel {
+font-size:8px; letter-spacing:1.5px; color:#c8d898;
+font-family:‘Share Tech Mono’,monospace; text-transform:uppercase;
+}
 #powerBtnVal {
 font-family:‘Russo One’,sans-serif; font-size:18px; line-height:1;
-color:var(–amber);
+color:#ffe060; text-shadow: 0 0 8px rgba(255,220,0,0.7);
 }
+/* Bar: full width of button */
 #powerBtnBar {
-width:52px; height:6px;
-background:rgba(0,0,0,0.6); border:1px solid #555; border-radius:1px; overflow:hidden;
+width:100%; height:7px;
+background:rgba(0,0,0,0.7); border:1px solid #555; border-radius:3px; overflow:hidden;
 }
 #powerBtnFill {
 height:100%; width:50%;
-background: linear-gradient(90deg,#7fff00 0%,#f0a800 60%,#e74c3c 100%);
-}
-#powerBtnLabel {
-font-size:7px; letter-spacing:1px; color:#b0c070;
-font-family:‘Share Tech Mono’,monospace;
+background: linear-gradient(90deg,#7fff00 0%,#f0c000 55%,#e74c3c 100%);
+border-radius:3px;
+transition: width 0.06s linear;
 }
 #fireBtn {
 flex-shrink:0; display:flex; align-items:center; justify-content:center;
@@ -238,7 +249,7 @@ margin-top:4px;
 
   <div class="key-hint">
     <span>◀ ▶ swipe</span> on battlefield — aim launcher<br>
-    <span>hold POWER</span> — charge shot (0→100), release locks power<br>
+    <span>drag POWER ◀▶</span> — swipe left/right to set power<br>
     <span>tap FIRE ◆</span> — launch missile at current power<br>
     <span>◀ ▶ buttons</span> — move truck left / right<br>
     <span>8 seconds</span> per turn — or your shot is forfeited
@@ -279,9 +290,11 @@ margin-top:4px;
       <button class="move-btn" id="btnRight">▶</button>
       <div id="sep" style="width:1px;background:var(--olive);align-self:stretch;margin:0 3px;flex-shrink:0;"></div>
       <div id="powerBtn">
-        <div id="powerBtnVal">50</div>
+        <div id="powerBtnTop">
+          <div id="powerBtnLabel">DRAG·PWR</div>
+          <div id="powerBtnVal">50</div>
+        </div>
         <div id="powerBtnBar"><div id="powerBtnFill" style="width:50%"></div></div>
-        <div id="powerBtnLabel">HOLD·PWR</div>
       </div>
       <button id="fireBtn">FIRE ◆</button>
     </div>
@@ -300,10 +313,10 @@ const WEAPONS = [
   // id, name, icon, damage, radius, gravity, color, bounces, missileSize(1-4), trailColor
   { id:'light',   name:'LIGHT',    icon:'🚀', damage:15, radius:22, gravity:1.0, color:'#f0c840', bounces:0, mSize:1, trailCol:'rgba(240,200,60,0.5)'  },
   { id:'medium',  name:'MEDIUM',   icon:'🚀', damage:25, radius:35, gravity:0.9, color:'#f08020', bounces:0, mSize:2, trailCol:'rgba(240,128,32,0.5)'  },
-  { id:'heavy',   name:'HEAVY',    icon:'🚀', damage:38, radius:50, gravity:0.8, color:'#e04020', bounces:0, mSize:3, trailCol:'rgba(224,64,32,0.55)'  },
+  { id:'acid',    name:'ACID RAIN', icon:'🧪', damage:5,  radius:8,  gravity:1.0, color:'#39ff14', bounces:0, mSize:1, trailCol:'rgba(57,255,20,0.6)',   isAcid:true, dropCount:18 },
   { id:'cluster', name:'CLUSTER',  icon:'💥', damage:12, radius:20, gravity:1.0, color:'#e06020', bounces:0, mSize:2, trailCol:'rgba(224,96,32,0.4)'   },
   { id:'bunker',  name:'BUNKER',   icon:'🔩', damage:30, radius:18, gravity:1.2, color:'#8080c0', bounces:2, mSize:2, trailCol:'rgba(128,128,192,0.4)' },
-  { id:'cruise',  name:'CRUISE',   icon:'✈️', damage:28, radius:32, gravity:0.0, color:'#40c0ff', bounces:0, mSize:2, trailCol:'rgba(64,192,255,0.45)' },
+  { id:'mgun',    name:'MACH GUN',  icon:'🔫', damage:1,  radius:6,  gravity:0.9, color:'#ffdd00', bounces:0, mSize:1, trailCol:'rgba(255,220,0,0.6)',   isBullet:true, bulletCount:20 },
   { id:'thermo',  name:'THERMO',   icon:'☢️', damage:55, radius:85, gravity:0.7, color:'#80ff40', bounces:0, mSize:4, trailCol:'rgba(128,255,64,0.5)'  },
   { id:'multi',   name:'MULTI',    icon:'🎯', damage:18, radius:28, gravity:0.9, color:'#ff8040', bounces:0, mSize:2, trailCol:'rgba(255,128,64,0.45)', multi:3 },
 ];
@@ -361,15 +374,17 @@ let turnTimerId      = 0;
 let touchStartX    = null;
 let touchStartY    = null;
 let swipeBaseAngle = null;
+let swipeLastX     = null;
 let swipeLocked    = false;
 const SWIPE_LOCK_PX = 7;
 
 // Power button state
-let powerCharging  = false;
-let powerStartTime = null;
-let powerRaf       = null;
+let powerDragging  = false;
+let powerDragId    = null;   // touch identifier
+let powerDragStartX= null;
+let powerDragBase  = 50;     // holdPower at drag start
 let holdPower      = 50;    // current power value
-const HOLD_CYCLE   = 2200;  // ms per 0→100→0 oscillation
+
 
 // ── Canvas ────────────────────────────────────────────────────────────────────
 function initCanvas() {
@@ -468,6 +483,43 @@ function deformCrater(cx, cy, r) {
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 function startGame() {
+  // ── STEP 1: Kill every trace of the previous game ──────────────────────────
+  gameRunning   = false;   // all callbacks check this and bail
+  animating     = false;
+  aiTurnActive  = false;
+  cancelAllGameTimers();   // cancel every tracked setTimeout
+  stopTurnTimer();         // cancel RAF turn timer
+  cancelAllGameTimers();   // catch anything stopTurnTimer re-queued
+
+  // Reset all turn state
+  currentPlayer = 0;
+  pendingSpawns = 0;
+  aiTurnId++;              // invalidate any surviving AI closure guards
+
+  // Reset all input/touch state so no ghost gestures carry over
+  swipeTouchId   = null;
+  touchStartX    = null;
+  touchStartY    = null;
+  swipeBaseAngle = null;
+  swipeLastX     = null;
+  swipeLocked    = false;
+  powerDragging  = false;
+  powerDragId    = null;
+  fireBtnTouched = false;
+
+  // Reset aim cache
+  aimCache = { angle: null, power: null, wx: null, wy: null, wpn: null, dots: [] };
+
+  // Reset power
+  holdPower = 50;
+
+  // Reset AI status display
+  setAISt('');
+
+  // Clear all visual state
+  projectiles = []; explosions = []; particles = []; dmgTexts = [];
+
+  // ── STEP 2: Build new game ─────────────────────────────────────────────────
   document.getElementById('overlay').style.display = 'none';
   initCanvas();
   generateTerrain();
@@ -483,23 +535,17 @@ function startGame() {
   flattenArea(p2x, 30);
   tanks.forEach(t => t.y = terrainY(t.x));
 
-  // Cancel every pending timeout from the previous game first
-  cancelAllGameTimers();
-  stopTurnTimer();
-
-  projectiles=[]; explosions=[]; particles=[]; dmgTexts=[];
-  currentPlayer=0; gameRunning=true; animating=false;
-  aiTurnId++;        // invalidate any AI stale-check guards
-  aiTurnActive = false;
-  pendingSpawns = 0;
+  gameRunning = true;  // now safe — all timers are dead, state is clean
   holdPower=50; updatePowerBtn();
 
   document.querySelectorAll('.wbtn').forEach((b,i)=>b.classList.toggle('sel',i===0));
   tanks[0].weapon=WEAPONS[0];
   updateHUD();
-  requestAnimationFrame(loop);
+  updatePowerBtn();
   setTimerBarVisible(false);
-  gameTimeout(startTurnTimer, 200); // slight delay so game is fully ready
+  // Start loop only once ever
+  if (!loopStarted) { loopStarted = true; requestAnimationFrame(loop); }
+  gameTimeout(startTurnTimer, 200);
 }
 
 // ── HUD ───────────────────────────────────────────────────────────────────────
@@ -521,20 +567,21 @@ let swipeTouchId = null; // track which finger owns the swipe
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
   if (!gameRunning || animating || currentPlayer!==0) return;
-  if (swipeTouchId !== null) return; // already tracking a finger
-  if (powerCharging) return;         // power button is active — don't start swipe
+  if (swipeTouchId !== null) return;
+  if (powerDragging) return;
   const t = e.changedTouches[0];
   swipeTouchId   = t.identifier;
   touchStartX    = t.clientX;
   touchStartY    = t.clientY;
+  // Capture angle AT this touch start — angle accumulates across swipes
   swipeBaseAngle = tanks[0].angle;
+  swipeLastX     = t.clientX;
   swipeLocked    = false;
 }, {passive: false});
 
 canvas.addEventListener('touchmove', e => {
   e.preventDefault();
   if (swipeTouchId === null) return;
-  // Find our specific finger
   let t = null;
   for (let i = 0; i < e.changedTouches.length; i++) {
     if (e.changedTouches[i].identifier === swipeTouchId) { t = e.changedTouches[i]; break; }
@@ -544,11 +591,18 @@ canvas.addEventListener('touchmove', e => {
   const dx = t.clientX - touchStartX;
   const dy = t.clientY - touchStartY;
   if (!swipeLocked && (Math.abs(dx)>=SWIPE_LOCK_PX || Math.abs(dy)>=SWIPE_LOCK_PX)) swipeLocked=true;
-  if (swipeLocked) { tanks[0].angle = Math.max(1, Math.min(179, swipeBaseAngle - dx*0.22)); updateHUD(); }
+  if (swipeLocked) {
+    // Use delta from this swipe's start — swipeBaseAngle holds value at touchstart
+    // so each swipe gesture is independent but angle carries over between swipes
+    const angleDelta = (t.clientX - touchStartX) * 0.18; // degrees per pixel (less sensitive)
+    tanks[0].angle = Math.max(1, Math.min(179, swipeBaseAngle - angleDelta));
+    updateHUD();
+  }
 }, {passive: false});
 
 function clearSwipe() {
-  swipeTouchId = null; touchStartX = null; touchStartY = null; swipeLocked = false;
+  swipeTouchId = null; touchStartX = null; touchStartY = null;
+  swipeLastX = null; swipeLocked = false;
 }
 canvas.addEventListener('touchend', e => {
   e.preventDefault();
@@ -558,44 +612,60 @@ canvas.addEventListener('touchend', e => {
 }, {passive:false});
 canvas.addEventListener('touchcancel', e => { e.preventDefault(); clearSwipe(); }, {passive:false});
 
-// ── Power button — touchstart/end only, preventDefault blocks click synthesis
+// ── Power button — drag left/right to adjust power ────────────────────────────
+// Swipe right = more power, swipe left = less power.
+// 160px swipe = full range (100 units). Each pixel = 100/160 ≈ 0.625 units.
+const POWER_PX_PER_UNIT = 1.8; // px drag per 1 power unit (higher = less sensitive)
 const powerBtn = document.getElementById('powerBtn');
-powerBtn.addEventListener('touchstart', e => {
-  e.preventDefault();
-  clearSwipe(); // cancel any in-progress swipe so they can't run simultaneously
-  if (!gameRunning || animating || currentPlayer!==0) return;
-  powerCharging=true; powerStartTime=Date.now();
-  powerBtn.classList.add('charging');
-  tickPower();
-}, {passive:false});
-powerBtn.addEventListener('touchend',    e => { e.preventDefault(); stopPower(); }, {passive:false});
-powerBtn.addEventListener('touchcancel', e => { e.preventDefault(); stopPower(); }, {passive:false});
-// Mouse fallback for desktop
-powerBtn.addEventListener('mousedown', e => {
-  if (!gameRunning || animating || currentPlayer!==0) return;
-  powerCharging=true; powerStartTime=Date.now();
-  powerBtn.classList.add('charging');
-  tickPower();
-});
-window.addEventListener('mouseup', () => stopPower());
 
-function stopPower() {
-  if (!powerCharging) return;
-  powerCharging=false;
-  cancelAnimationFrame(powerRaf); powerRaf=null;
-  document.getElementById('powerBtn').classList.remove('charging');
+function startPowerDrag(clientX) {
+  if (!gameRunning || animating || currentPlayer!==0) return;
+  powerDragging   = true;
+  powerDragStartX = clientX;
+  powerDragBase   = holdPower;
+  powerBtn.classList.add('charging');
+}
+
+function movePowerDrag(clientX) {
+  if (!powerDragging) return;
+  const dx    = clientX - powerDragStartX;
+  const delta = Math.round(dx / POWER_PX_PER_UNIT);
+  holdPower   = Math.max(1, Math.min(100, powerDragBase + delta));
+  updatePowerBtn();
+}
+
+function endPowerDrag() {
+  if (!powerDragging) return;
+  powerDragging = false;
+  powerBtn.classList.remove('charging');
   tanks[0].power = holdPower;
 }
 
-function tickPower() {
-  if (!powerCharging) return;
-  const elapsed = Date.now() - powerStartTime;
-  // Ramp 0→100 over HOLD_CYCLE ms, clamp at 100 (no bounce back)
-  holdPower = Math.min(100, Math.round((elapsed / HOLD_CYCLE) * 100));
-  holdPower = Math.max(1, holdPower);
-  updatePowerBtn();
-  if (holdPower < 100) powerRaf = requestAnimationFrame(tickPower);
-}
+// Touch
+powerBtn.addEventListener('touchstart', e => {
+  e.preventDefault();
+  clearSwipe();
+  const t = e.changedTouches[0];
+  powerDragId = t.identifier;
+  startPowerDrag(t.clientX);
+}, {passive:false});
+
+powerBtn.addEventListener('touchmove', e => {
+  e.preventDefault();
+  for (let i=0; i<e.changedTouches.length; i++) {
+    if (e.changedTouches[i].identifier === powerDragId) {
+      movePowerDrag(e.changedTouches[i].clientX); break;
+    }
+  }
+}, {passive:false});
+
+powerBtn.addEventListener('touchend',    e => { e.preventDefault(); endPowerDrag(); }, {passive:false});
+powerBtn.addEventListener('touchcancel', e => { e.preventDefault(); endPowerDrag(); }, {passive:false});
+
+// Mouse fallback
+powerBtn.addEventListener('mousedown', e => { startPowerDrag(e.clientX); });
+window.addEventListener('mousemove',   e => { if (powerDragging) movePowerDrag(e.clientX); });
+window.addEventListener('mouseup',     ()  => endPowerDrag());
 
 function updatePowerBtn() {
   document.getElementById('powerBtnVal').textContent  = holdPower;
@@ -682,10 +752,28 @@ function fire() {
   const RAIL_BASE_Y = -16;
   const startX = t.x + RAIL_BASE_X + Math.cos(rad) * RAIL_LEN;
   const startY = t.y + RAIL_BASE_Y - Math.sin(rad) * RAIL_LEN;
-  // Multi-warhead: spawn 3 missiles in a spread
-  if (t.weapon.multi) {
+  if (t.weapon.isAcid) {
+    // Acid Rain: fire one carrier shell that bursts into acid drops at peak
     spawnProjectile(startX, startY, Math.cos(rad)*spd, -Math.sin(rad)*spd, t.weapon, 0);
-    pendingSpawns = 2; // 2 more missiles coming
+    // isAcid shell handled specially in updateProjectiles — burst at apex
+  } else if (t.weapon.isBullet) {
+    // Machine gun burst
+    const count = t.weapon.bulletCount || 20;
+    spawnProjectile(startX, startY, Math.cos(rad)*spd, -Math.sin(rad)*spd, t.weapon, 0);
+    pendingSpawns = count - 1;
+    for (let bi = 1; bi < count; bi++) {
+      const spread = (Math.random() - 0.5) * 0.12;
+      const bRad   = rad + spread;
+      const bSpd   = spd * (0.92 + Math.random() * 0.16);
+      gameTimeout(() => {
+        pendingSpawns--;
+        if (!gameRunning) return;
+        spawnProjectile(startX, startY, Math.cos(bRad)*bSpd, -Math.sin(bRad)*bSpd, t.weapon, 0);
+      }, bi * 80);
+    }
+  } else if (t.weapon.multi) {
+    spawnProjectile(startX, startY, Math.cos(rad)*spd, -Math.sin(rad)*spd, t.weapon, 0);
+    pendingSpawns = 2;
     [1, 2].forEach(si => {
       const offset = (si === 1 ? -8 : 8);
       gameTimeout(() => {
@@ -712,10 +800,18 @@ function updateProjectiles() {
     const p = projectiles[i];
     p.trail.push({x:p.x,y:p.y});
     if (p.trail.length>20) p.trail.shift();
+    const prevVy = p.vy;
     p.vx += wind;
     p.vy += p.weapon.gravity * 0.25;
     p.x  += p.vx;
     p.y  += p.vy;
+
+    // Acid shell: burst into drops at apex (vy changes from negative to positive)
+    if (p.weapon.isAcid && !p.weapon.isAcidDrop && prevVy < 0 && p.vy >= 0) {
+      burstAcid(p);
+      projectiles.splice(i, 1);
+      continue;
+    }
 
     if (p.x<-60||p.x>W+60||p.y>H+60) { projectiles.splice(i,1); continue; }
     if (p.y >= terrainY(p.x)) {
@@ -734,8 +830,110 @@ function updateProjectiles() {
   if (projectiles.length===0 && pendingSpawns===0 && animating) gameTimeout(endTurn, 700);
 }
 
+// Called when an acid shell reaches its apex — bursts into drops
+function burstAcid(p) {
+  const w      = p.weapon;
+  const count  = w.dropCount || 18;
+  pendingSpawns += count;
+
+  // Determine spread direction: drops fall toward the enemy's side
+  const shooter  = tanks[currentPlayer];
+  const enemy    = tanks[1 - currentPlayer];
+  const toRight  = enemy.x > shooter.x; // true if enemy is to the right
+
+  // Spread: downward arc biased toward enemy side
+  // angleStart and angleEnd in radians (0=right, PI=left, PI/2=down)
+  const cx     = toRight ? Math.PI * 0.15 : Math.PI * 0.85; // center of spread
+  const spread = Math.PI * 0.55; // total spread width
+
+  for (let i = 0; i < count; i++) {
+    const t     = count > 1 ? i / (count - 1) : 0.5;
+    const angle = cx - spread/2 + t * spread + (Math.random()-0.5)*0.10;
+    const spd   = 2.5 + Math.random() * 3.0;
+    const drop  = { ...w, isAcidDrop:true, isAcid:false, damage:5, radius:9,
+                    color:'#39ff14', trailCol:'rgba(57,255,20,0.5)', mSize:1 };
+    const captureAngle = angle;
+    const captureSpd   = spd;
+    gameTimeout(() => {
+      pendingSpawns--;
+      if (!gameRunning) return;
+      spawnProjectile(p.x, p.y,
+        Math.cos(captureAngle) * captureSpd,
+        Math.sin(captureAngle) * captureSpd,
+        drop, 0);
+    }, i * 40);
+  }
+}
+
 function explode(p) {
   const w = p.weapon;
+
+  // Acid drop — liquid splat, melts terrain, damage
+  if (w.isAcidDrop) {
+    const meltR = 10 + Math.random()*6;
+    deformCrater(p.x, p.y, meltR);
+    tanks.forEach((t, idx) => {
+      const dx = t.x - p.x, dy = t.y - p.y;
+      if (Math.sqrt(dx*dx + dy*dy) < meltR + 18) {
+        t.hp = Math.max(0, t.hp - w.damage);
+        t.y  = terrainY(t.x);
+        if (w.damage > 0) playBulletImpact();
+        dmgTexts.push({x:t.x, y:t.y-36, dmg:w.damage, color:'#39ff14', life:1});
+      }
+    });
+
+    // Liquid splat — fast primary droplets that bounce/spread sideways
+    for (let i = 0; i < 12; i++) {
+      const ang = Math.PI + (Math.random()-0.5) * Math.PI; // upward hemisphere
+      const spd = 1.5 + Math.random() * 3.5;
+      particles.push({
+        x:p.x, y:p.y,
+        vx: Math.cos(ang)*spd,
+        vy: Math.sin(ang)*spd - 1.5,
+        life:0.85, color:'#39ff14',
+        size: 2.5 + Math.random()*2.5,
+        mud:false, acid:true
+      });
+    }
+    // Secondary micro-droplets — wide splatter
+    for (let i = 0; i < 18; i++) {
+      const ang = Math.random() * Math.PI * 2;
+      const spd = 0.4 + Math.random() * 1.8;
+      particles.push({
+        x:p.x, y:p.y,
+        vx: Math.cos(ang)*spd,
+        vy: Math.sin(ang)*spd - 0.3,
+        life:0.55, color: i%3===0 ? '#00ff44' : '#22dd00',
+        size: 1.2 + Math.random()*1.5,
+        mud:false, acid:true
+      });
+    }
+    // Glowing pool that expands and fades
+    explosions.push({x:p.x, y:terrainY(p.x), r:0, maxR:meltR*1.2, color:'#39ff14', life:0.45, acid:true});
+    return;
+  }
+
+  // Machine gun bullet — tiny impact, 1 damage, no crater, small spark
+  if (w.isBullet) {
+    tanks.forEach((t, idx) => {
+      const dx = t.x - p.x, dy = t.y - p.y;
+      if (Math.sqrt(dx*dx + dy*dy) < w.radius + 18) {
+        t.hp = Math.max(0, t.hp - 1);
+        t.y  = terrainY(t.x);
+        if (t.hp > 0) playBulletImpact();
+        dmgTexts.push({x:t.x, y:t.y-36, dmg:1, color:idx===0?'#5bc0eb':'#fa7921', life:1});
+      }
+    });
+    // Tiny spark burst
+    for (let i=0;i<6;i++) {
+      const ang = Math.random()*Math.PI*2;
+      const spd = 1.5 + Math.random()*3;
+      particles.push({x:p.x,y:p.y, vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd-1,
+        life:0.6, color:'#ffee44', size:1.5, mud:false});
+    }
+    return;
+  }
+
   if (w.id==='cluster') {
     for (let i=0;i<6;i++) {
       const ang=(Math.random()-0.5)*Math.PI*1.4;
@@ -928,7 +1126,7 @@ function doAITurn() {
 
     const dist = Math.abs(ai.x - tgt.x);
     if      (tgt.hp < 30  && Math.random() < 0.5) ai.weapon = WEAPONS.find(w=>w.id==='thermo')  || WEAPONS[6];
-    else if (dist > W*0.5 && Math.random() < 0.4) ai.weapon = WEAPONS.find(w=>w.id==='cruise')  || WEAPONS[5];
+    else if (dist > W*0.5 && Math.random() < 0.4) ai.weapon = WEAPONS.find(w=>w.id==='mgun')   || WEAPONS[5];
     else if (Math.random() < 0.25)                 ai.weapon = WEAPONS[Math.floor(Math.random()*WEAPONS.length)];
     else                                            ai.weapon = WEAPONS[0];
 
@@ -1071,6 +1269,21 @@ function playHit() {
   });
 }
 
+function playBulletImpact() {
+  const ac = getAudioCtx();
+  const t  = ac.currentTime;
+  // Sharp click — quieter than playHit so rapid fire doesn't saturate
+  const o = ac.createOscillator();
+  const g = ac.createGain();
+  o.type = 'square';
+  o.frequency.setValueAtTime(800, t);
+  o.frequency.exponentialRampToValueAtTime(200, t + 0.04);
+  g.gain.setValueAtTime(0.06, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+  o.connect(g); g.connect(ac.destination);
+  o.start(t); o.stop(t + 0.06);
+}
+
 function playWin() {
   const ac = getAudioCtx();
   const t  = ac.currentTime;
@@ -1090,22 +1303,84 @@ function playWin() {
 
 
 // ── Drawing ───────────────────────────────────────────────────────────────────
-function drawSky() {
-  const g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,   '#01060f');  // near-black at top
-  g.addColorStop(0.45,'#061428');  // deep navy
-  g.addColorStop(0.75,'#0a1e14');  // dark green-black horizon
-  g.addColorStop(1,   '#050e08');  // almost black at ground
-  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+// Pre-generate star data once (stable positions, no flicker)
+const STARS = Array.from({length:120}, (_,i) => ({
+  x:  (i*137.508 + 43)  % 1,   // fractional — scaled to W at draw time
+  y:  (i*98.617  + 17)  % 0.55,
+  r:  0.4 + (i*73%10)/22,       // base brightness
+  size: i%15===0 ? 2.2 : i%5===0 ? 1.5 : 1,
+  twinkle: i%4===0,              // every 4th star twinkles
+  phase: (i*0.37) % (Math.PI*2),
+}));
 
-  // Stars — brighter, more varied
-  for(let s=0;s<80;s++){
-    const sx=(s*137+30)%W;
-    const sy=(s*97+10)%(H*0.50);
-    const br=0.4+((s*31)%10)/20;
-    ctx.fillStyle=`rgba(255,255,255,${br})`;
-    ctx.fillRect(sx,sy,(s%3===0?2:1),(s%3===0?2:1));
-  }
+function drawSky() {
+  // ── Deep space gradient ──────────────────────────────────────────────────
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0,    '#000510');   // deep space black
+  g.addColorStop(0.25, '#020d28');   // rich midnight blue
+  g.addColorStop(0.55, '#051a3a');   // cobalt blue
+  g.addColorStop(0.78, '#0a2a1e');   // blue-green at horizon
+  g.addColorStop(1,    '#030f08');   // near-black ground
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+
+  // ── Nebula / atmospheric glow bands ─────────────────────────────────────
+  // Soft purple-blue nebula cloud top-right
+  const nb1 = ctx.createRadialGradient(W*0.75, H*0.18, 0, W*0.75, H*0.18, W*0.38);
+  nb1.addColorStop(0,   'rgba(80,40,160,0.09)');
+  nb1.addColorStop(0.5, 'rgba(40,20,100,0.05)');
+  nb1.addColorStop(1,   'rgba(0,0,0,0)');
+  ctx.fillStyle = nb1; ctx.fillRect(0, 0, W, H);
+
+  // Soft teal nebula left-center
+  const nb2 = ctx.createRadialGradient(W*0.22, H*0.30, 0, W*0.22, H*0.30, W*0.30);
+  nb2.addColorStop(0,   'rgba(0,80,120,0.08)');
+  nb2.addColorStop(0.6, 'rgba(0,40,80,0.04)');
+  nb2.addColorStop(1,   'rgba(0,0,0,0)');
+  ctx.fillStyle = nb2; ctx.fillRect(0, 0, W, H);
+
+  // Horizon atmospheric haze (green-teal glow)
+  const hz = ctx.createLinearGradient(0, H*0.65, 0, H*0.85);
+  hz.addColorStop(0,   'rgba(0,0,0,0)');
+  hz.addColorStop(0.4, 'rgba(10,60,35,0.18)');
+  hz.addColorStop(1,   'rgba(0,0,0,0)');
+  ctx.fillStyle = hz; ctx.fillRect(0, H*0.65, W, H*0.20);
+
+  // ── Stars ────────────────────────────────────────────────────────────────
+  const now = Date.now() * 0.001;
+  ctx.save();
+  STARS.forEach(st => {
+    const sx = st.x * W;
+    const sy = st.y * H;
+    const brightness = st.twinkle
+      ? st.r * (0.55 + 0.45 * Math.sin(now * 1.8 + st.phase))
+      : st.r;
+
+    if (st.size > 1.8) {
+      // Large star — draw with a 4-point cross spike
+      const grd = ctx.createRadialGradient(sx, sy, 0, sx, sy, st.size * 2.5);
+      grd.addColorStop(0,   `rgba(255,255,240,${brightness})`);
+      grd.addColorStop(0.3, `rgba(200,220,255,${brightness*0.5})`);
+      grd.addColorStop(1,   'rgba(0,0,0,0)');
+      ctx.fillStyle = grd;
+      ctx.beginPath(); ctx.arc(sx, sy, st.size * 2.5, 0, Math.PI*2); ctx.fill();
+      // Cross spike
+      ctx.strokeStyle = `rgba(255,255,240,${brightness*0.35})`;
+      ctx.lineWidth = 0.5;
+      [[0,st.size*4],[0,-st.size*4],[st.size*4,0],[-st.size*4,0]].forEach(([dx,dy]) => {
+        ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(sx+dx,sy+dy); ctx.stroke();
+      });
+    } else {
+      // Small star — simple bright dot with soft glow
+      const grd = ctx.createRadialGradient(sx, sy, 0, sx, sy, st.size * 2);
+      grd.addColorStop(0,   `rgba(255,255,245,${brightness})`);
+      grd.addColorStop(0.5, `rgba(180,200,255,${brightness*0.3})`);
+      grd.addColorStop(1,   'rgba(0,0,0,0)');
+      ctx.fillStyle = grd;
+      ctx.beginPath(); ctx.arc(sx, sy, st.size * 2, 0, Math.PI*2); ctx.fill();
+    }
+  });
+  ctx.restore();
 }
 
 // Strata palette (top = index 0)
@@ -1363,7 +1638,40 @@ function drawAimGuide() {
 
 function drawProjectiles() {
   projectiles.forEach(p => {
-    const w      = p.weapon;
+    const w = p.weapon;
+
+    // Acid drop — green glowing blob
+    if (w.isAcidDrop) {
+      ctx.save();
+      ctx.shadowColor = '#39ff14';
+      ctx.shadowBlur  = 6;
+      ctx.fillStyle   = '#39ff14';
+      ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = 'rgba(180,255,100,0.7)';
+      ctx.beginPath(); ctx.arc(p.x-0.8, p.y-0.8, 1.2, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+      return;
+    }
+
+    // Bullet — draw as a short bright streak
+    if (w.isBullet) {
+      const speed = Math.sqrt(p.vx*p.vx + p.vy*p.vy) || 1;
+      const dirX  = p.vx/speed, dirY = p.vy/speed;
+      const len   = 6;
+      ctx.save();
+      ctx.strokeStyle = '#ffee22';
+      ctx.lineWidth   = 2;
+      ctx.lineCap     = 'round';
+      ctx.shadowColor = '#ffaa00';
+      ctx.shadowBlur  = 4;
+      ctx.beginPath();
+      ctx.moveTo(p.x - dirX*len, p.y - dirY*len);
+      ctx.lineTo(p.x + dirX*2,   p.y + dirY*2);
+      ctx.stroke();
+      ctx.restore();
+      return;
+    }
+
     const mSize  = w.mSize || 2;
     const mLen   = 7 + mSize * 4;
     const mRad   = 1.2 + mSize * 0.7;
@@ -1447,13 +1755,27 @@ function drawExplosions() {
     const e=explosions[i];
     e.r+=(e.maxR-e.r)*0.17; e.life-=0.038;
     if(e.life<=0){explosions.splice(i,1);continue;}
-    const g=ctx.createRadialGradient(e.x,e.y,0,e.x,e.y,e.r);
-    g.addColorStop(0,`rgba(255,255,210,${e.life})`);
-    g.addColorStop(0.28,`rgba(230,120,0,${e.life*0.9})`);
-    g.addColorStop(0.65,`rgba(70,35,10,${e.life*0.55})`);
-    g.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.beginPath(); ctx.arc(e.x,e.y,e.r,0,Math.PI*2);
-    ctx.fillStyle=g; ctx.fill();
+    if (e.acid) {
+      // Acid pool — flat glowing green ellipse on terrain
+      const g=ctx.createRadialGradient(e.x,e.y,0,e.x,e.y,e.r);
+      g.addColorStop(0,   `rgba(120,255,60,${e.life*0.9})`);
+      g.addColorStop(0.4, `rgba(40,200,10,${e.life*0.6})`);
+      g.addColorStop(0.8, `rgba(0,100,0,${e.life*0.3})`);
+      g.addColorStop(1,   'rgba(0,0,0,0)');
+      ctx.save();
+      ctx.scale(1, 0.35); // flatten into a puddle
+      ctx.beginPath(); ctx.arc(e.x, e.y/0.35, e.r, 0, Math.PI*2);
+      ctx.fillStyle=g; ctx.fill();
+      ctx.restore();
+    } else {
+      const g=ctx.createRadialGradient(e.x,e.y,0,e.x,e.y,e.r);
+      g.addColorStop(0,`rgba(255,255,210,${e.life})`);
+      g.addColorStop(0.28,`rgba(230,120,0,${e.life*0.9})`);
+      g.addColorStop(0.65,`rgba(70,35,10,${e.life*0.55})`);
+      g.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.beginPath(); ctx.arc(e.x,e.y,e.r,0,Math.PI*2);
+      ctx.fillStyle=g; ctx.fill();
+    }
   }
 }
 
@@ -1463,17 +1785,28 @@ function drawParticles() {
     p.x+=p.vx; p.y+=p.vy;
     p.vy+=p.mud?0.23:0.11;
     p.vx*=0.97;
-    p.life-=p.mud?0.020:0.033;
+    p.life-=p.mud?0.020:p.acid?0.015:0.033;
     if(p.life<=0){particles.splice(i,1);continue;}
-    if(p.mud){
+    if (p.acid) {
+      // Liquid acid blob — glowing with bright core
+      const r = p.size * (0.3 + p.life * 0.7);
+      ctx.save();
+      ctx.globalAlpha = p.life;
+      const grd = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r*2.5);
+      grd.addColorStop(0,   'rgba(140,255,80,0.9)');
+      grd.addColorStop(0.45,'rgba(40,200,10,0.5)');
+      grd.addColorStop(1,   'rgba(0,120,0,0)');
+      ctx.fillStyle = grd;
+      ctx.beginPath(); ctx.arc(p.x,p.y,r*2.5,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    } else if(p.mud){
       // Mud clumps — chunky square-ish blobs
       const sz=p.size*(0.4+p.life*0.6);
       ctx.save(); ctx.globalAlpha=Math.min(1,p.life*1.4);
       ctx.fillStyle=p.color;
       ctx.fillRect(p.x-sz*0.5,p.y-sz*0.5,sz,sz);
-      // Slightly lighter edge
-      ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.lineWidth=0.5;
-      ctx.strokeRect(p.x-sz*0.5,p.y-sz*0.5,sz,sz);
       ctx.restore();
     } else {
       ctx.beginPath(); ctx.arc(p.x,p.y,p.size*p.life,0,Math.PI*2);
@@ -1503,19 +1836,22 @@ function drawWindIndicator() {
   ctx.restore();
 }
 
-// ── Main loop ─────────────────────────────────────────────────────────────────
+// ── Main loop — runs once forever, started once on first DEPLOY ──────────────
+let loopStarted = false;
 function loop() {
-  ctx.clearRect(0,0,W,H);
-  drawSky();
-  drawTerrain();
-  drawExplosions();
-  drawAimGuide();
-  drawProjectiles();
-  tanks.forEach((t,i)=>drawTank(t,i));
-  drawParticles();
-  drawDmgTexts();
-  drawWindIndicator();
-  if(gameRunning&&animating) updateProjectiles();
+  if (tanks) {
+    ctx.clearRect(0,0,W,H);
+    drawSky();
+    drawTerrain();
+    drawExplosions();
+    drawAimGuide();
+    drawProjectiles();
+    tanks.forEach((t,i)=>drawTank(t,i));
+    drawParticles();
+    drawDmgTexts();
+    drawWindIndicator();
+    if(gameRunning&&animating) updateProjectiles();
+  }
   requestAnimationFrame(loop);
 }
 
