@@ -315,7 +315,7 @@ const WEAPONS = [
   { id:'medium',  name:'MEDIUM',   icon:'🚀', damage:25, radius:35, gravity:0.9, color:'#f08020', bounces:0, mSize:2, trailCol:'rgba(240,128,32,0.5)'  },
   { id:'acid',    name:'ACID RAIN', icon:'🧪', damage:5,  radius:8,  gravity:1.0, color:'#39ff14', bounces:0, mSize:1, trailCol:'rgba(57,255,20,0.6)',   isAcid:true, dropCount:18 },
   { id:'cluster', name:'CLUSTER',  icon:'💥', damage:12, radius:20, gravity:1.0, color:'#e06020', bounces:0, mSize:2, trailCol:'rgba(224,96,32,0.4)'   },
-  { id:'bunker',  name:'BUNKER',   icon:'🔩', damage:30, radius:18, gravity:1.2, color:'#8080c0', bounces:2, mSize:2, trailCol:'rgba(128,128,192,0.4)' },
+  { id:'sledge',  name:'SLEDGE',   icon:'🔨', damage:25, radius:20, gravity:1.4, color:'#c09030', bounces:0, mSize:2, trailCol:'rgba(192,144,48,0.5)',  isSledge:true },
   { id:'mgun',    name:'MACH GUN',  icon:'🔫', damage:1,  radius:6,  gravity:0.9, color:'#ffdd00', bounces:0, mSize:1, trailCol:'rgba(255,220,0,0.6)',   isBullet:true, bulletCount:20 },
   { id:'thermo',  name:'THERMO',   icon:'☢️', damage:55, radius:85, gravity:0.7, color:'#80ff40', bounces:0, mSize:4, trailCol:'rgba(128,255,64,0.5)'  },
   { id:'multi',   name:'MULTI',    icon:'🎯', damage:18, radius:28, gravity:0.9, color:'#ff8040', bounces:0, mSize:2, trailCol:'rgba(255,128,64,0.45)', multi:3 },
@@ -509,6 +509,7 @@ function startGame() {
 
   // Reset aim cache
   aimCache = { angle: null, power: null, wx: null, wy: null, wpn: null, dots: [] };
+  sledgeState = null;
 
   // Reset power
   holdPower = 50;
@@ -737,9 +738,10 @@ document.addEventListener('keydown', e => {
 
 // ── Fire ──────────────────────────────────────────────────────────────────────
 function fire() {
+  // Strict gate: only fire when it's genuinely our turn and nothing is in flight
   if (!gameRunning) return;
-  if (animating && projectiles.length > 0) return; // already shooting
-  animating = false; // reset in case of stale state
+  if (animating) return;          // already fired — hard stop, no reset trick
+  if (currentPlayer === 0 && !gameRunning) return; // safety
   stopTurnTimer();
   aimCache.dots = []; // clear guide immediately
   const idx = currentPlayer;
@@ -786,8 +788,8 @@ function fire() {
   } else {
     spawnProjectile(startX, startY, Math.cos(rad)*spd, -Math.sin(rad)*spd, t.weapon, 0);
   }
+  animating = true;   // set BEFORE playShoot so loop sees it immediately
   playShoot(t.power);
-  animating = true;
 }
 
 function spawnProjectile(x, y, vx, vy, weapon, bounces) {
@@ -827,10 +829,85 @@ function updateProjectiles() {
       }
     }
   }
-  if (projectiles.length===0 && pendingSpawns===0 && animating) gameTimeout(endTurn, 700);
+  if (projectiles.length===0 && pendingSpawns===0 && animating) {
+    animating = false;  // lock immediately so this can't fire twice
+    gameTimeout(endTurn, 700);
+  }
 }
 
 // Called when an acid shell reaches its apex — bursts into drops
+// Active sledge state for drawing the hammer visual
+let sledgeState = null; // { x, y, phase:'up'|'down', progress, poundsDone, totalPounds, w }
+
+function startSledgePound(x, groundY, w, totalPounds) {
+  pendingSpawns++; // keep turn alive during pounding
+  sledgeState = { x, groundY, phase:'up', progress:0, poundsDone:0, totalPounds, w,
+                  hammerY: groundY - 80, targetY: groundY };
+  doPound(x, groundY, w, 0, totalPounds);
+}
+
+function doPound(x, groundY, w, poundsDone, totalPounds) {
+  if (!gameRunning) { sledgeState = null; pendingSpawns--; return; }
+
+  // Rise up before slam
+  sledgeState = { x, groundY, phase:'rising', progress:0, poundsDone, totalPounds, w,
+                  hammerY: groundY - 5 };
+  const RISE_MS = 300, SLAM_MS = 120;
+
+  gameTimeout(() => {
+    if (!gameRunning) { sledgeState = null; pendingSpawns--; return; }
+    // Slam down
+    sledgeState.phase = 'slamming';
+
+    gameTimeout(() => {
+      if (!gameRunning) { sledgeState = null; pendingSpawns--; return; }
+      // Impact!
+      sledgeState.phase = 'impact';
+      playPound();
+
+      // Deform terrain & damage
+      const impactR = w.radius + poundsDone * 5;
+      deformCrater(x, groundY, impactR * 0.6);
+      tanks.forEach((t, idx) => {
+        const dx = t.x - x;
+        const dist = Math.abs(dx);
+        if (dist < impactR + 30) {
+          const dmg = Math.round(w.damage * (1 - dist / (impactR + 30)));
+          if (dmg > 0) {
+            t.hp = Math.max(0, t.hp - dmg);
+            t.y  = terrainY(t.x);
+            dmgTexts.push({ x:t.x, y:t.y-42, dmg, color: idx===0?'#5bc0eb':'#fa7921', life:1 });
+          }
+        }
+      });
+
+      // Shockwave ring
+      explosions.push({ x, y:groundY, r:2, maxR:impactR*1.8, color:'#c09030', life:0.55, shockwave:true });
+
+      // Ground dust particles
+      for (let i=0;i<18;i++) {
+        const ang = Math.PI + (Math.random()-0.5)*Math.PI*0.8;
+        const spd = 2 + Math.random()*5;
+        particles.push({ x, y:groundY,
+          vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd-2,
+          life:0.8, color:'#8a6030', size:3+Math.random()*4, mud:true });
+      }
+
+      const nextPound = poundsDone + 1;
+      if (nextPound < totalPounds) {
+        // Pause then next pound
+        gameTimeout(() => doPound(x, terrainY(x), w, nextPound, totalPounds), 400);
+      } else {
+        // Done — clear sledge and end turn
+        gameTimeout(() => {
+          sledgeState = null;
+          pendingSpawns--;
+        }, 350);
+      }
+    }, SLAM_MS);
+  }, RISE_MS);
+}
+
 function burstAcid(p) {
   const w      = p.weapon;
   const count  = w.dropCount || 18;
@@ -934,6 +1011,12 @@ function explode(p) {
     return;
   }
 
+  // Sledgehammer — land, then pound 3 times
+  if (w.isSledge) {
+    startSledgePound(p.x, p.y, w, 3);
+    return;
+  }
+
   if (w.id==='cluster') {
     for (let i=0;i<6;i++) {
       const ang=(Math.random()-0.5)*Math.PI*1.4;
@@ -1013,13 +1096,16 @@ function startTurnTimer() {
     } else if (elapsed < TURN_EXPIRE_MS) {
       fill.style.background = elapsed % 600 < 300 ? '#f0a800' : '#e74c3c';
     } else {
-      // Time's up
+      // Time's up — forfeit turn
       fill.style.width = '0%';
       stopTurnTimer();
       setTimerBarVisible(false);
-      animating = true;
-      projectiles = [];
-      gameTimeout(endTurn, 400);
+      if (!animating) {        // only forfeit if not already mid-shot
+        animating = true;
+        projectiles = [];
+        pendingSpawns = 0;
+        gameTimeout(endTurn, 400);
+      }
       return;
     }
     turnTimerRaf = requestAnimationFrame(tick);
@@ -1041,6 +1127,7 @@ function setTimerBarVisible(visible) {
 }
 
 function endTurn() {
+  if (!gameRunning) return; // game ended mid-flight (win condition already shown)
   tanks.forEach(t => t.y=terrainY(t.x));
   if (tanks[0].hp<=0||tanks[1].hp<=0) {
     const winner=tanks[0].hp>0?'PLAYER 1':'AI';
@@ -1282,6 +1369,46 @@ function playBulletImpact() {
   g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
   o.connect(g); g.connect(ac.destination);
   o.start(t); o.stop(t + 0.06);
+}
+
+function playPound() {
+  // Deep thudding hammer strike
+  const ac = getAudioCtx();
+  const t  = ac.currentTime;
+  // Sub-bass thud
+  const sub = ac.createOscillator();
+  const sg  = ac.createGain();
+  sub.type = 'sine';
+  sub.frequency.setValueAtTime(60, t);
+  sub.frequency.exponentialRampToValueAtTime(20, t + 0.18);
+  sg.gain.setValueAtTime(0, t);
+  sg.gain.linearRampToValueAtTime(1.0, t + 0.01);
+  sg.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+  sub.connect(sg); sg.connect(ac.destination);
+  sub.start(t); sub.stop(t + 0.25);
+  // Impact crack
+  const buf = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.08), ac.sampleRate);
+  const d   = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/d.length, 3);
+  const src = ac.createBufferSource();
+  const lp  = ac.createBiquadFilter();
+  const eg  = ac.createGain();
+  lp.type = 'lowpass'; lp.frequency.value = 600;
+  eg.gain.setValueAtTime(0.7, t);
+  eg.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+  src.buffer = buf;
+  src.connect(lp); lp.connect(eg); eg.connect(ac.destination);
+  src.start(t);
+  // Metal clang overtone
+  const clang = ac.createOscillator();
+  const cg    = ac.createGain();
+  clang.type = 'sawtooth';
+  clang.frequency.setValueAtTime(180, t);
+  clang.frequency.exponentialRampToValueAtTime(80, t + 0.15);
+  cg.gain.setValueAtTime(0.25, t + 0.005);
+  cg.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+  clang.connect(cg); cg.connect(ac.destination);
+  clang.start(t); clang.stop(t + 0.2);
 }
 
 function playWin() {
@@ -1653,6 +1780,37 @@ function drawProjectiles() {
       return;
     }
 
+    // Sledgehammer in flight — draw as a big hammerhead pointing downward
+    if (w.isSledge) {
+      const speed = Math.sqrt(p.vx*p.vx + p.vy*p.vy) || 1;
+      const angle = Math.atan2(p.vy, p.vx);
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(angle - Math.PI/2); // point nose in flight direction
+
+      // Handle (shaft)
+      ctx.fillStyle = '#8B4513';
+      ctx.fillRect(-2, -22, 4, 28);
+
+      // Head — flat hammerhead
+      ctx.fillStyle = '#c09030';
+      ctx.fillRect(-10, 2, 20, 10);
+      // Head sheen
+      ctx.fillStyle = 'rgba(255,230,100,0.4)';
+      ctx.fillRect(-10, 2, 20, 3);
+      // Head shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.fillRect(-10, 9, 20, 3);
+
+      // Motion trail glow
+      ctx.shadowColor = '#f0b040';
+      ctx.shadowBlur  = 8;
+      ctx.fillStyle   = 'rgba(240,160,40,0.3)';
+      ctx.fillRect(-10, 2, 20, 10);
+      ctx.restore();
+      return;
+    }
+
     // Bullet — draw as a short bright streak
     if (w.isBullet) {
       const speed = Math.sqrt(p.vx*p.vx + p.vy*p.vy) || 1;
@@ -1755,6 +1913,25 @@ function drawExplosions() {
     const e=explosions[i];
     e.r+=(e.maxR-e.r)*0.17; e.life-=0.038;
     if(e.life<=0){explosions.splice(i,1);continue;}
+    if (e.shockwave) {
+      // Shockwave ring — expanding circle, no fill
+      ctx.save();
+      ctx.globalAlpha = e.life * 0.8;
+      ctx.strokeStyle = e.color;
+      ctx.lineWidth   = 4 * e.life;
+      ctx.shadowColor = e.color;
+      ctx.shadowBlur  = 12;
+      ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, Math.PI*2); ctx.stroke();
+      // Second ring slightly behind
+      if (e.r > 10) {
+        ctx.globalAlpha = e.life * 0.4;
+        ctx.lineWidth   = 2 * e.life;
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.r * 0.7, 0, Math.PI*2); ctx.stroke();
+      }
+      ctx.restore();
+      continue;
+    }
+
     if (e.acid) {
       // Acid pool — flat glowing green ellipse on terrain
       const g=ctx.createRadialGradient(e.x,e.y,0,e.x,e.y,e.r);
@@ -1828,6 +2005,56 @@ function drawDmgTexts() {
   }
 }
 
+function drawSledge() {
+  if (!sledgeState) return;
+  const s = sledgeState;
+  const gY = s.groundY;
+
+  // Calculate hammer Y based on phase
+  let hammerY;
+  if (s.phase === 'rising') {
+    hammerY = gY - 5 - 75 * Math.min(1, s.progress);
+  } else if (s.phase === 'slamming') {
+    hammerY = gY - 80 + 80 * Math.min(1, s.progress);
+  } else { // impact
+    hammerY = gY - 2 + Math.sin(Date.now()*0.05)*2; // slight shake
+  }
+  s.progress = Math.min(1, (s.progress || 0) + 0.08);
+
+  ctx.save();
+  ctx.translate(s.x, hammerY);
+
+  // Handle
+  ctx.fillStyle = '#6b3410';
+  ctx.fillRect(-3, -40, 6, 44);
+  // Handle grain lines
+  ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1;
+  for (let g=-35; g<4; g+=6) {
+    ctx.beginPath(); ctx.moveTo(-3,g); ctx.lineTo(3,g); ctx.stroke();
+  }
+
+  // Hammerhead
+  ctx.fillStyle = '#b08820';
+  ctx.fillRect(-18, 0, 36, 16);
+  // Bevel highlights
+  ctx.fillStyle = 'rgba(255,230,80,0.5)';
+  ctx.fillRect(-18, 0, 36, 4);
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.fillRect(-18, 12, 36, 4);
+  // Face detail
+  ctx.fillStyle = '#c8a030';
+  ctx.fillRect(-14, 3, 28, 10);
+  // Glow on impact phase
+  if (s.phase === 'impact') {
+    ctx.shadowColor = '#ffcc00';
+    ctx.shadowBlur  = 20;
+    ctx.fillStyle   = 'rgba(255,200,0,0.25)';
+    ctx.fillRect(-18, 0, 36, 16);
+  }
+
+  ctx.restore();
+}
+
 function drawWindIndicator() {
   ctx.save();
   ctx.font='9px Share Tech Mono'; ctx.textAlign='center';
@@ -1848,6 +2075,7 @@ function loop() {
     drawProjectiles();
     tanks.forEach((t,i)=>drawTank(t,i));
     drawParticles();
+    drawSledge();
     drawDmgTexts();
     drawWindIndicator();
     if(gameRunning&&animating) updateProjectiles();
